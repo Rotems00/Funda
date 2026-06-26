@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funda — 5-Pillar Analysis (reference implementation)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#f6f7f9;font-family:'Manrope',sans-serif;color:#0f172a;}
+  canvas{display:block;}
+  .wrap{max-width:1080px;margin:0 auto;padding:30px 24px 60px;}
+  .card{background:#fff;border:1px solid #e7ebf0;border-radius:18px;padding:26px 28px 28px;}
+  .pillar-grid{display:grid;grid-template-columns:360px 1fr;gap:34px;margin-top:24px;align-items:center;}
+  .pillar-row{display:flex;gap:15px;align-items:flex-start;padding:14px 15px;border:1px solid #eef2f7;border-radius:15px;background:#fafbfc;transition:all .14s;}
+  .pillar-row:hover{background:#fff;box-shadow:0 4px 16px rgba(15,23,42,0.07);}
+  /* responsive: stack the radar above the rows on narrow screens */
+  @media (max-width:720px){ .pillar-grid{grid-template-columns:1fr;} .radar-box{margin:0 auto;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+
+    <!-- header -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:-0.02em;">5-Pillar Analysis</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:4px;" id="pillarSub">How CEG scores on the five things that make a business worth owning.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;background:#fffbeb;border:1px solid #fde9b8;border-radius:11px;padding:9px 14px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></span>
+        <span style="font-size:12.5px;font-weight:700;color:#854d0e;" id="pillarVerdict">Mixed — fortress balance sheet, cooling growth</span>
+      </div>
+    </div>
+
+    <!-- radar + rows -->
+    <div class="pillar-grid">
+      <div class="radar-box" style="position:relative;width:360px;height:340px;">
+        <canvas id="pillarRadar"></canvas>
+        <div style="position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+          <div style="font-size:42px;font-weight:800;letter-spacing:-0.03em;line-height:0.9;" id="overallScore">3.5</div>
+          <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.06em;margin-top:2px;">OVERALL / 5</div>
+        </div>
+      </div>
+      <div id="pillarRows" style="display:flex;flex-direction:column;gap:14px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// DATA — replace with your real values. Each metric is [label, value, sentiment].
+//   sentiment: 'pos' (green) | 'neg' (red) | 'warn' (amber) | 'neutral' (gray)
+//   icon: an SVG path drawn at 24x24, stroke only.
+// ============================================================================
+const OVERALL = 3.5;
+const PILLARS = [
+  { name:'Growing',          score:2.9,
+    icon:'M3 17l5-5 4 4 7-8',
+    desc:'Revenue & EPS growth trajectory',
+    metrics:[ ['Rev YoY','+8%','pos'], ['EPS YoY','\u221238%','neg'], ['5Y CAGR','+24%','pos'], ['Trajectory','cooling','warn'] ] },
+  { name:'Profitable',       score:3.5,
+    icon:'M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6',
+    desc:'Net margins & return on capital',
+    metrics:[ ['Net margin','12.7%','pos'], ['ROE','18%','pos'], ['ROIC','9.2%','neutral'], ['Earnings quality','high','pos'] ] },
+  { name:'Fairly Priced',    score:3.9,
+    icon:'M20.6 13.4L13.4 20.6a2 2 0 01-2.8 0l-7-7V4h9.6l7 7a2 2 0 010 2.4zM7.5 7.5h.01',
+    desc:'Valuation vs growth',
+    metrics:[ ['PEG','1.40','neutral'], ['P/E','23.5','neutral'], ['vs growth','fair','pos'] ] },
+  { name:'Safe',             score:4.9,
+    icon:'M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z',
+    desc:'Debt levels & financial strength',
+    metrics:[ ['Debt/Equity','0.20','pos'], ['Current ratio','1.50','pos'], ['Int. coverage','8\u00d7','pos'], ['Intangibles','low','pos'] ] },
+  { name:'Can Keep Winning', score:2.7,
+    icon:'M6 9H4a2 2 0 01-2-2V4h4M18 9h2a2 2 0 002-2V4h-4M6 4h12v6a6 6 0 01-12 0zM9 18h6M12 14v4',
+    desc:'Competitive moat & sustainability',
+    metrics:[ ['ROIC trend','flat','warn'], ['Op margin','rising','pos'], ['Buybacks','net \u22121%','warn'] ] }
+];
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+// score → accent color (deep green → emerald → amber → orange)
+function colorFor(score){
+  if(score >= 4.4) return '#059669';
+  if(score >= 3.3) return '#10b981';
+  if(score >= 2.9) return '#f59e0b';
+  return '#f97316';
+}
+function chipCss(s){
+  const base='font-size:11.5px;font-weight:700;border-radius:8px;padding:4px 9px;display:inline-flex;gap:5px;align-items:center;';
+  if(s==='pos')  return base+'background:#ecfdf5;color:#059669;';
+  if(s==='neg')  return base+'background:#fef2f2;color:#dc2626;';
+  if(s==='warn') return base+'background:#fffbeb;color:#b45309;';
+  return base+'background:#f1f5f9;color:#475569;';
+}
+
+// ============================================================================
+// RENDER PILLAR ROWS
+// ============================================================================
+function renderRows(){
+  document.getElementById('pillarRows').innerHTML = PILLARS.map(p=>{
+    const c = colorFor(p.score);
+    const pct = (p.score/5*100).toFixed(0);
+    const chips = p.metrics.map(m=>
+      `<span style="${chipCss(m[2])}">${m[0]} <b style="font-weight:800;">${m[1]}</b></span>`
+    ).join('');
+    return `
+      <div class="pillar-row" style="--c:${c};" onmouseover="this.style.borderColor='${c}'" onmouseout="this.style.borderColor='#eef2f7'">
+        <div style="flex:none;width:42px;height:42px;border-radius:12px;background:${c}1a;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${p.icon}"></path></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="font-size:14.5px;font-weight:800;">${p.name}</div>
+            <div style="display:flex;align-items:baseline;gap:3px;flex:none;">
+              <span style="font-size:16px;font-weight:800;color:${c};">${p.score.toFixed(1)}</span>
+              <span style="font-size:11px;font-weight:700;color:#cbd5e1;">/5</span>
+            </div>
+          </div>
+          <div style="height:6px;border-radius:4px;background:#eaeef3;margin-top:9px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${c};border-radius:4px;"></div>
+          </div>
+          <div style="font-size:11.5px;color:#94a3b8;font-weight:600;margin-top:9px;">${p.desc}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;">${chips}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ============================================================================
+// RENDER RADAR ("shape of the company")
+// ============================================================================
+let radar = null;
+function renderRadar(){
+  const cv = document.getElementById('pillarRadar');
+  const ctx = cv.getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,0,340);
+  grad.addColorStop(0,'rgba(16,185,129,0.34)');
+  grad.addColorStop(1,'rgba(13,148,136,0.10)');
+  if(radar) radar.destroy();
+  radar = new Chart(cv,{
+    type:'radar',
+    data:{
+      labels: PILLARS.map(p=>p.name),
+      datasets:[{
+        data: PILLARS.map(p=>p.score),
+        fill:true, backgroundColor:grad,
+        borderColor:'#10b981', borderWidth:2.5,
+        pointBackgroundColor: PILLARS.map(p=>colorFor(p.score)),
+        pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, pointHoverRadius:6
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:700, easing:'easeOutCubic' },
+      plugins:{ legend:{display:false}, tooltip:{enabled:false} },
+      scales:{ r:{
+        min:0, max:5, beginAtZero:true,
+        ticks:{ display:false, stepSize:1 },
+        grid:{ color:'#e7ebf0' },
+        angleLines:{ color:'#e7ebf0' },
+        pointLabels:{ color:'#475569', font:{ size:12, weight:'700' } }
+      }}
+    }
+  });
+}
+
+// boot
+Chart.defaults.font.family = 'Manrope';
+document.getElementById('overallScore').textContent = OVERALL.toFixed(1);
+renderRows();
+renderRadar();
+</script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#e7e5df;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:48px;background:#e7e5df;font-family:'Manrope',sans-serif;">
+
+  <div style="max-width:600px;margin-bottom:34px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9a958a;">Stock Rating App · Search</div>
+    <div style="font-size:28px;font-weight:800;color:#26241f;margin-top:8px;letter-spacing:-0.02em;">Look up any ticker → get it rated</div>
+    <div style="font-size:15px;line-height:1.5;color:#6f6a5f;margin-top:10px;text-wrap:pretty;">The core loop: paste any US-listed ticker, we pull the latest filings &amp; price data, run your fundamental metrics, and return a star rating with the 5-point check. Clean direction (A). Shown on <strong>Palantir (PLTR)</strong> — a great test: superb business, demanding price.</div>
+  </div>
+
+  <div style="display:flex;gap:40px;align-items:flex-start;">
+
+    <!-- ========================= 1 · SEARCH (EMPTY) ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">1 · Search</div>
+      <div style="width:360px;height:740px;background:#f6f6f8;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.16);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#15171c;background:#fff;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="background:#fff;padding:8px 22px 18px;">
+          <div style="font-size:23px;font-weight:800;color:#15171c;letter-spacing:-0.02em;">Rate any stock</div>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:14px;background:#f4f4f6;border:1px solid #ececf0;border-radius:14px;padding:14px 15px;">
+            <span style="color:#9a968e;font-size:16px;">⌕</span>
+            <span style="font-size:15px;color:#a8a49c;">Ticker or company name…</span>
+          </div>
+          <div style="font-size:12.5px;color:#9a968e;margin-top:9px;">Any US-listed stock (NYSE / NASDAQ). Try a ticker like AAPL or a name.</div>
+        </div>
+
+        <div style="flex:1;overflow:hidden;padding:20px 20px 0;">
+          <div style="font-size:12px;font-weight:800;letter-spacing:0.06em;color:#9a968e;text-transform:uppercase;">Recent</div>
+          <div style="display:flex;gap:8px;margin-top:11px;">
+            <span style="font-size:13px;font-weight:700;background:#fff;border:1px solid #ececf0;color:#15171c;padding:9px 14px;border-radius:11px;">MELI</span>
+            <span style="font-size:13px;font-weight:700;background:#fff;border:1px solid #ececf0;color:#15171c;padding:9px 14px;border-radius:11px;">NVDA</span>
+            <span style="font-size:13px;font-weight:700;background:#fff;border:1px solid #ececf0;color:#15171c;padding:9px 14px;border-radius:11px;">CRWD</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:800;letter-spacing:0.06em;color:#9a968e;text-transform:uppercase;margin-top:24px;">Trending in your wheelhouse</div>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px;">
+            <!-- row -->
+            <div style="background:#fff;border-radius:15px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(30,26,18,0.05);">
+              <div style="width:36px;height:36px;border-radius:10px;background:#101a33;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none;">P</div>
+              <div style="flex:1;"><div style="font-size:14.5px;font-weight:800;color:#15171c;">PLTR</div><div style="font-size:11.5px;color:#9a968e;">Palantir · Software</div></div>
+              <span style="position:relative;display:inline-flex;color:#e2e2e6;font-size:11px;letter-spacing:1.5px;">★★★★★<span style="position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f5b526;width:72%;">★★★★★</span></span>
+            </div>
+            <div style="background:#fff;border-radius:15px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(30,26,18,0.05);">
+              <div style="width:36px;height:36px;border-radius:10px;background:#c2410c;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none;">A</div>
+              <div style="flex:1;"><div style="font-size:14.5px;font-weight:800;color:#15171c;">AMD</div><div style="font-size:11.5px;color:#9a968e;">Adv. Micro Devices · Semis</div></div>
+              <span style="position:relative;display:inline-flex;color:#e2e2e6;font-size:11px;letter-spacing:1.5px;">★★★★★<span style="position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f5b526;width:80%;">★★★★★</span></span>
+            </div>
+            <div style="background:#fff;border-radius:15px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(30,26,18,0.05);">
+              <div style="width:36px;height:36px;border-radius:10px;background:#1d4ed8;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none;">S</div>
+              <div style="flex:1;"><div style="font-size:14.5px;font-weight:800;color:#15171c;">SNOW</div><div style="font-size:11.5px;color:#9a968e;">Snowflake · Cloud</div></div>
+              <span style="position:relative;display:inline-flex;color:#e2e2e6;font-size:11px;letter-spacing:1.5px;">★★★★★<span style="position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f5b526;width:66%;">★★★★★</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-top:1px solid #eee;display:flex;justify-content:space-around;padding:13px 0 20px;">
+          <span style="font-size:12px;font-weight:600;color:#b8b4ad;">Explore</span>
+          <span style="font-size:12px;font-weight:600;color:#b8b4ad;">Watchlist</span>
+          <span style="font-size:12px;font-weight:800;color:#15171c;">Search</span>
+          <span style="font-size:12px;font-weight:600;color:#b8b4ad;">Profile</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= 2 · AUTOCOMPLETE ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">2 · Type a ticker</div>
+      <div style="width:360px;height:740px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.16);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#15171c;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="padding:8px 22px 0;">
+          <div style="display:flex;align-items:center;gap:9px;background:#fff;border:2px solid #10131a;border-radius:14px;padding:13px 15px;">
+            <span style="color:#15171c;font-size:16px;">⌕</span>
+            <span style="font-size:16px;color:#15171c;font-weight:700;">PLTR</span>
+            <span style="width:1.5px;height:19px;background:#15171c;margin-left:-3px;"></span>
+            <div style="flex:1;"></div>
+            <span style="font-size:13px;font-weight:700;color:#9a968e;">Cancel</span>
+          </div>
+        </div>
+
+        <div style="flex:1;padding:12px 14px 0;">
+          <!-- top match -->
+          <div style="background:#f6f6f8;border-radius:15px;padding:13px 14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:10px;background:#101a33;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none;">P</div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:800;color:#15171c;">PLTR <span style="font-size:12px;font-weight:600;color:#9a968e;">· Palantir Technologies</span></div>
+              <div style="font-size:11.5px;color:#9a968e;margin-top:1px;">NYSE · Software &amp; Analytics</div>
+            </div>
+            <span style="font-size:13px;font-weight:800;color:#fff;background:#10131a;padding:8px 13px;border-radius:10px;">Rate →</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:800;letter-spacing:0.06em;color:#9a968e;text-transform:uppercase;margin:20px 8px 4px;">Other matches</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid #f2f2f4;">
+              <div style="width:34px;height:34px;border-radius:9px;background:#0a66c2;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;">P</div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;">PYPL</div><div style="font-size:11.5px;color:#9a968e;">PayPal Holdings · Fintech</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid #f2f2f4;">
+              <div style="width:34px;height:34px;border-radius:9px;background:#16a34a;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;">P</div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;">PL</div><div style="font-size:11.5px;color:#9a968e;">Planet Labs · Space &amp; Data</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 8px;">
+              <div style="width:34px;height:34px;border-radius:9px;background:#7c3aed;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;">P</div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;">PATH</div><div style="font-size:11.5px;color:#9a968e;">UiPath · Automation SW</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= 3 · ANALYZING ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">3 · Running your metrics</div>
+      <div style="width:360px;height:740px;background:#10131a;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.18);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#fff;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:30px 26px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:46px;height:46px;border-radius:13px;background:#1b2030;color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;">P</div>
+            <div>
+              <div style="font-size:18px;font-weight:800;color:#fff;">Palantir Technologies</div>
+              <div style="font-size:12.5px;color:#8b93a6;">NYSE: PLTR</div>
+            </div>
+          </div>
+
+          <div style="font-size:22px;font-weight:800;color:#fff;margin-top:34px;letter-spacing:-0.01em;">Crunching the fundamentals…</div>
+          <div style="font-size:14px;color:#aab2c4;margin-top:8px;line-height:1.45;">Pulling the latest 10-Q, price history and news, then scoring against your 5-point check.</div>
+
+          <div style="display:flex;flex-direction:column;gap:3px;margin-top:30px;">
+            <!-- done -->
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid #1f2532;">
+              <span style="width:22px;height:22px;border-radius:50%;background:#1b8a5a;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">✓</span>
+              <span style="flex:1;font-size:14.5px;font-weight:600;color:#e6eaf2;">Revenue &amp; EPS growth</span>
+              <span style="font-size:12.5px;font-weight:700;color:#35c98b;">Strong</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid #1f2532;">
+              <span style="width:22px;height:22px;border-radius:50%;background:#1b8a5a;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">✓</span>
+              <span style="flex:1;font-size:14.5px;font-weight:600;color:#e6eaf2;">Margins &amp; ROIC</span>
+              <span style="font-size:12.5px;font-weight:700;color:#35c98b;">Healthy</span>
+            </div>
+            <!-- in progress -->
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid #1f2532;">
+              <span style="width:22px;height:22px;border-radius:50%;border:2.5px solid #3a4052;border-top-color:#fff;flex:none;"></span>
+              <span style="flex:1;font-size:14.5px;font-weight:700;color:#fff;">Valuation (P/E · PEG · P/FCF)</span>
+              <span style="font-size:12.5px;font-weight:700;color:#8b93a6;">…</span>
+            </div>
+            <!-- pending -->
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid #1f2532;opacity:0.5;">
+              <span style="width:22px;height:22px;border-radius:50%;border:2px solid #3a4052;flex:none;"></span>
+              <span style="flex:1;font-size:14.5px;font-weight:600;color:#aab2c4;">Balance-sheet safety</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;padding:13px 0;opacity:0.5;">
+              <span style="width:22px;height:22px;border-radius:50%;border:2px solid #3a4052;flex:none;"></span>
+              <span style="flex:1;font-size:14.5px;font-weight:600;color:#aab2c4;">Moat &amp; news sentiment</span>
+            </div>
+          </div>
+
+          <div style="flex:1;"></div>
+          <div style="height:5px;background:#1f2532;border-radius:3px;overflow:hidden;"><div style="height:100%;width:58%;background:#35c98b;border-radius:3px;"></div></div>
+          <div style="text-align:center;font-size:12.5px;color:#8b93a6;margin-top:12px;">Analyzing 14 metrics · ~3s</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= 4 · FRESH RATING ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">4 · Rated</div>
+      <div style="width:360px;height:740px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.16);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#15171c;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 18px 12px;">
+          <span style="font-size:22px;color:#15171c;">‹</span>
+          <span style="font-size:14px;font-weight:700;color:#15171c;">PLTR</span>
+          <span style="font-size:18px;color:#b8b4ad;">☆</span>
+        </div>
+
+        <div style="flex:1;overflow:hidden;padding:0 18px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:42px;height:42px;border-radius:12px;background:#101a33;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;">P</div>
+            <div style="flex:1;">
+              <div style="font-size:16.5px;font-weight:800;color:#15171c;">Palantir Technologies</div>
+              <div style="font-size:12px;color:#8a8780;">Software · NYSE</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:16px;font-weight:800;color:#15171c;">$128.40</div>
+              <div style="font-size:12px;font-weight:700;color:#1b8a5a;">▲ 3.1%</div>
+            </div>
+          </div>
+
+          <!-- context strip -->
+          <div style="display:flex;gap:9px;margin-top:13px;">
+            <div style="flex:1;border:1px solid #ececf0;border-radius:13px;padding:10px 12px;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#9a968e;">YTD</div>
+              <div style="font-size:16px;font-weight:800;color:#1b8a5a;margin-top:2px;">+41%</div>
+            </div>
+            <div style="flex:1;border:1px solid #ececf0;border-radius:13px;padding:10px 12px;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#9a968e;">From ATH</div>
+              <div style="font-size:16px;font-weight:800;color:#15171c;margin-top:2px;">−4%</div>
+            </div>
+          </div>
+
+          <!-- verdict -->
+          <div style="margin-top:14px;background:#10131a;border-radius:18px;padding:18px;color:#fff;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#8b93a6;">AI Rating · fresh</div>
+              <span style="font-size:10px;font-weight:700;color:#aab2c4;background:#1f2532;padding:3px 8px;border-radius:6px;">In your wheelhouse</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:11px;margin-top:8px;">
+              <div style="font-size:40px;font-weight:800;line-height:1;letter-spacing:-0.03em;">3.4</div>
+              <div style="padding-bottom:4px;">
+                <span style="position:relative;display:inline-flex;color:#3a3f4d;font-size:16px;letter-spacing:2.5px;">★★★★★<span style="position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#f5b526;width:68%;">★★★★★</span></span>
+              </div>
+            </div>
+            <div style="font-size:13px;line-height:1.45;color:#d4d8e0;margin-top:10px;text-wrap:pretty;">Superb, accelerating business — but the valuation is the catch. You're paying a steep premium for that growth.</div>
+          </div>
+
+          <!-- mini 5-point -->
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="flex:1;font-size:13.5px;font-weight:700;color:#15171c;">Is it growing?</span>
+              <div style="width:96px;height:6px;border-radius:3px;background:#f0eff2;overflow:hidden;"><div style="height:100%;width:90%;background:#1b8a5a;"></div></div>
+              <span style="font-size:12.5px;font-weight:800;color:#15171c;width:24px;text-align:right;">4.5</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="flex:1;font-size:13.5px;font-weight:700;color:#15171c;">Profitable growth?</span>
+              <div style="width:96px;height:6px;border-radius:3px;background:#f0eff2;overflow:hidden;"><div style="height:100%;width:84%;background:#1b8a5a;"></div></div>
+              <span style="font-size:12.5px;font-weight:800;color:#15171c;width:24px;text-align:right;">4.2</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="flex:1;font-size:13.5px;font-weight:700;color:#15171c;">Price reasonable?</span>
+              <div style="width:96px;height:6px;border-radius:3px;background:#f0eff2;overflow:hidden;"><div style="height:100%;width:22%;background:#c0392b;"></div></div>
+              <span style="font-size:12.5px;font-weight:800;color:#c0392b;width:24px;text-align:right;">1.1</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="flex:1;font-size:13.5px;font-weight:700;color:#15171c;">Balance sheet safe?</span>
+              <div style="width:96px;height:6px;border-radius:3px;background:#f0eff2;overflow:hidden;"><div style="height:100%;width:98%;background:#1b8a5a;"></div></div>
+              <span style="font-size:12.5px;font-weight:800;color:#15171c;width:24px;text-align:right;">4.9</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="flex:1;font-size:13.5px;font-weight:700;color:#15171c;">Can it keep winning?</span>
+              <div style="width:96px;height:6px;border-radius:3px;background:#f0eff2;overflow:hidden;"><div style="height:100%;width:88%;background:#1b8a5a;"></div></div>
+              <span style="font-size:12.5px;font-weight:800;color:#15171c;width:24px;text-align:right;">4.4</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- actions -->
+        <div style="padding:14px 18px 22px;display:flex;gap:9px;border-top:1px solid #f2f2f4;background:#fff;">
+          <button style="flex:1;border:1px solid #e0e0e4;background:#fff;color:#15171c;font-size:14px;font-weight:800;font-family:inherit;padding:14px;border-radius:14px;cursor:pointer;">+ Watchlist</button>
+          <button style="flex:1.4;border:none;background:#10131a;color:#fff;font-size:14px;font-weight:800;font-family:inherit;padding:14px;border-radius:14px;cursor:pointer;">See full report</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

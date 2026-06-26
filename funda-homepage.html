@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funda — Homepage (reference implementation)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#080d16;font-family:'Manrope',sans-serif;color:#e6eaf2;}
+  .page{min-height:100vh;display:flex;flex-direction:column;
+        background:radial-gradient(1200px 600px at 80% -5%,rgba(16,185,129,0.16),transparent 60%),
+                   radial-gradient(900px 500px at 0% 10%,rgba(56,189,248,0.08),transparent 55%),#080d16;}
+  .shell{max-width:1180px;width:100%;margin:0 auto;padding-left:28px;padding-right:28px;}
+  .navlink{font-size:13.5px;font-weight:700;color:#7c8aa0;cursor:pointer;transition:color .14s;}
+  .navlink:hover{color:#e6eaf2;}
+  .chip{font-size:12.5px;font-weight:700;color:#cbd5e1;background:#121b29;border:1px solid #233042;padding:7px 14px;border-radius:9px;cursor:pointer;transition:all .14s;}
+  .chip:hover{background:#1b2735;border-color:#2f4055;}
+  .rate-btn{border:none;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-family:inherit;font-size:15px;font-weight:800;padding:13px 24px;border-radius:11px;cursor:pointer;box-shadow:0 6px 16px rgba(16,185,129,0.4);transition:filter .14s;}
+  .rate-btn:hover{filter:brightness(1.07);}
+  .hero-grid{display:grid;grid-template-columns:1fr 360px;gap:56px;align-items:center;padding:54px 0;width:100%;}
+  .stat-div{width:1px;height:30px;background:#1e2a3a;}
+  .gradtext{background:linear-gradient(120deg,#34d399,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  @media (max-width:880px){
+    .hero-grid{grid-template-columns:1fr;gap:36px;}
+    .sample-card{max-width:420px;}
+    .h1{font-size:40px !important;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- NAV -->
+  <div class="shell" style="padding-top:22px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <!-- custom logomark: rising tick on a baseline, inside a gradient gem tile -->
+      <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(150deg,#10b981,#047857);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(16,185,129,0.35);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M5 16.5L10 11l3.2 3.2L19 7.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M15 7.5h4v4" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 20h14" stroke="#fff" stroke-opacity="0.5" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#fff;">Funda<span style="color:#34d399;">.</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:26px;">
+      <span class="navlink">Top Rated</span>
+      <span class="navlink">Watchlist</span>
+      <span class="navlink">How it works</span>
+      <span style="font-size:13px;font-weight:800;color:#0b1220;background:#fff;padding:9px 17px;border-radius:10px;cursor:pointer;">Sign in</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="shell" style="flex:1;display:flex;align-items:center;">
+    <div class="hero-grid">
+
+      <!-- left -->
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.28);border-radius:30px;padding:7px 14px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399;"></span>
+          <span style="font-size:11.5px;font-weight:700;color:#6ee7b7;letter-spacing:0.06em;">AI FUNDAMENTAL RATINGS · 4,800+ US STOCKS</span>
+        </div>
+
+        <div class="h1" style="font-size:54px;font-weight:800;color:#fff;letter-spacing:-0.035em;line-height:1.02;margin-top:22px;text-wrap:balance;">Know what a stock is <span class="gradtext">really</span> worth.</div>
+
+        <div style="font-size:17px;color:#9aa7bd;margin-top:18px;line-height:1.55;max-width:460px;text-wrap:pretty;">An AI reads the filings, multi-year trends and latest news — then scores any company <b style="color:#cbd5e1;">0–5</b> on the five things that actually matter. Not hype. Not price action.</div>
+
+        <!-- SEARCH (wire onSubmit to your route, e.g. /stock/:ticker) -->
+        <form onsubmit="return false;" style="display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:8px 8px 8px 18px;margin-top:30px;max-width:500px;box-shadow:0 20px 50px rgba(0,0,0,0.45);">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="tickerInput" placeholder="Search any ticker — NVDA, MELI, PLTR…" style="flex:1;border:none;outline:none;font-family:inherit;font-size:15.5px;font-weight:600;color:#0f172a;background:transparent;"/>
+          <button type="submit" class="rate-btn" onclick="goRate()">Rate →</button>
+        </form>
+
+        <div style="display:flex;align-items:center;gap:9px;margin-top:18px;flex-wrap:wrap;">
+          <span style="font-size:12.5px;color:#5f6b80;font-weight:700;">Popular:</span>
+          <span class="chip" onclick="goRate('NVDA')">NVDA</span>
+          <span class="chip" onclick="goRate('MELI')">MELI</span>
+          <span class="chip" onclick="goRate('PLTR')">PLTR</span>
+          <span class="chip" onclick="goRate('CEG')">CEG</span>
+        </div>
+
+        <!-- trust strip -->
+        <div style="display:flex;align-items:center;gap:26px;margin-top:38px;">
+          <div><div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">4,800+</div><div style="font-size:11.5px;color:#5f6b80;font-weight:700;margin-top:1px;">US stocks rated</div></div>
+          <div class="stat-div"></div>
+          <div><div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">14</div><div style="font-size:11.5px;color:#5f6b80;font-weight:700;margin-top:1px;">metrics per score</div></div>
+          <div class="stat-div"></div>
+          <div><div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">5yr</div><div style="font-size:11.5px;color:#5f6b80;font-weight:700;margin-top:1px;">trend history</div></div>
+        </div>
+      </div>
+
+      <!-- right: floating sample rating card -->
+      <div class="sample-card" style="background:linear-gradient(180deg,#fff,#f6f9fc);border-radius:22px;padding:22px;box-shadow:0 30px 70px rgba(0,0,0,0.5);transform:rotate(1.4deg);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:11px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;">N</div>
+            <div><div style="font-size:16px;font-weight:800;color:#0f172a;line-height:1;">NVDA</div><div style="font-size:11.5px;color:#94a3b8;font-weight:600;margin-top:2px;">NVIDIA Corp</div></div>
+          </div>
+          <div style="text-align:right;"><div style="font-size:26px;font-weight:800;color:#0f172a;line-height:1;letter-spacing:-0.02em;">4.6</div><div style="color:#fbbf24;font-size:13px;letter-spacing:1px;margin-top:3px;">★★★★★</div></div>
+        </div>
+        <div id="heroSpark" style="height:60px;margin-top:18px;"></div>
+        <div id="sampleBars" style="display:flex;flex-direction:column;gap:9px;margin-top:16px;"></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eef2f7;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;color:#94a3b8;font-weight:600;">Sample rating</span>
+          <span style="font-size:12.5px;font-weight:800;color:#059669;">Elite quality →</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:11px;color:#3f4b5e;padding:0 0 22px;">Illustrative · informational only, not financial advice · data fetched once &amp; cached for every user</div>
+</div>
+
+<script>
+// ---- search routing: point these at your real app router ----
+function goRate(ticker){
+  const t = (ticker || document.getElementById('tickerInput').value || '').trim().toUpperCase();
+  if(!t) return;
+  // e.g. window.location.href = '/stock/' + t;   (or your SPA navigate)
+  console.log('Rate', t);
+}
+
+// ---- sample card: sparkline (pure SVG, no library) ----
+function spark(arr, color, h){
+  h = h || 60; const w = 100, max = Math.max(...arr), min = Math.min(...arr), rng = (max - min) || 1;
+  const pts = arr.map((v,i)=>{ const x=(i/(arr.length-1))*w; const y=h-5-((v-min)/rng)*(h-10); return x.toFixed(1)+','+y.toFixed(1); });
+  const last = pts[pts.length-1].split(',');
+  return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:100%;height:'+h+'px;display:block;">'
+    + '<defs><linearGradient id="hsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.28"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+    + '<polygon points="0,'+h+' '+pts.join(' ')+' '+w+','+h+'" fill="url(#hsg)"/>'
+    + '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '<circle cx="'+last[0]+'" cy="'+last[1]+'" r="3.2" fill="'+color+'"/></svg>';
+}
+
+// ---- sample card: 5-pillar bars ----
+const SAMPLE_PILLARS = [
+  ['Growing', 5.0, '#059669'],
+  ['Profitable', 4.8, '#059669'],
+  ['Fairly Priced', 2.4, '#f59e0b'],
+  ['Safe', 4.5, '#059669'],
+  ['Keep Winning', 4.6, '#059669']
+];
+function renderBars(){
+  document.getElementById('sampleBars').innerHTML = SAMPLE_PILLARS.map(p=>
+    '<div style="display:flex;align-items:center;gap:9px;">'
+    + '<span style="font-size:11.5px;font-weight:700;color:#64748b;width:78px;">'+p[0]+'</span>'
+    + '<div style="flex:1;height:6px;background:#eef2f7;border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+(p[1]/5*100)+'%;background:'+p[2]+';border-radius:3px;"></div></div>'
+    + '<span style="font-size:11.5px;font-weight:800;color:#0f172a;">'+p[1].toFixed(1)+'</span>'
+    + '</div>'
+  ).join('');
+}
+
+document.getElementById('heroSpark').innerHTML = spark([3,3.4,4,3.8,4.6,5,5.6,6.4,7.1,8.2,9,11], '#10b981', 60);
+renderBars();
+</script>
+</body>
+</html>

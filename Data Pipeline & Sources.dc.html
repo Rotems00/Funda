@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#e7e5df;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:48px;background:#e7e5df;font-family:'Manrope',sans-serif;">
+
+  <div style="max-width:760px;margin-bottom:34px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9a958a;">Stock Rating App · Architecture</div>
+    <div style="font-size:28px;font-weight:800;color:#26241f;margin-top:8px;letter-spacing:-0.02em;">Fetch once, cache forever, serve everyone</div>
+    <div style="font-size:15px;line-height:1.5;color:#6f6a5f;margin-top:10px;text-wrap:pretty;">The data pipeline and the cost model behind it. The first lookup of a ticker pulls from a paid vendor; the result lands in your DB and every subsequent user is served from cache for free. Re-fetch only when there's genuinely new data.</div>
+  </div>
+
+  <div style="display:flex;gap:40px;align-items:flex-start;">
+
+    <!-- ===================== SYSTEM DIAGRAM ===================== -->
+    <div style="flex:none;width:1180px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">System &amp; data flow</div>
+      <div style="width:1180px;background:#fbfbfa;border-radius:18px;box-shadow:0 18px 50px rgba(30,26,18,0.12);padding:34px;">
+
+        <!-- MAIN PIPELINE -->
+        <div style="display:flex;align-items:stretch;gap:0;">
+
+          <!-- 1 SOURCES -->
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:#c0392b;text-transform:uppercase;margin-bottom:9px;">① External · paid per call</div>
+            <div style="flex:1;border:1.5px solid #f0d9d4;background:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:9px;">
+              <div style="font-size:14px;font-weight:800;color:#15171c;">Data sources</div>
+              <div style="background:#fbf3f1;border-radius:10px;padding:9px 11px;"><div style="font-size:12.5px;font-weight:700;color:#15171c;">FMP / Polygon</div><div style="font-size:11px;color:#9a857f;">fundamentals · ratios · prices</div></div>
+              <div style="background:#fbf3f1;border-radius:10px;padding:9px 11px;"><div style="font-size:12.5px;font-weight:700;color:#15171c;">SEC EDGAR</div><div style="font-size:11px;color:#9a857f;">as-reported · free · audit</div></div>
+              <div style="background:#fbf3f1;border-radius:10px;padding:9px 11px;"><div style="font-size:12.5px;font-weight:700;color:#15171c;">News API</div><div style="font-size:11px;color:#9a857f;">ticker-tagged headlines</div></div>
+            </div>
+          </div>
+
+          <!-- arrow -->
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:54px;padding-top:26px;">
+            <div style="font-size:11px;color:#9a968e;font-weight:700;margin-bottom:3px;">fetch</div>
+            <div style="font-size:26px;color:#c9c4bb;line-height:1;">→</div>
+          </div>
+
+          <!-- 2 GATEWAY -->
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:#b5621b;text-transform:uppercase;margin-bottom:9px;">② Ingestion gateway</div>
+            <div style="flex:1;border:1.5px solid #f0e2d4;background:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:9px;">
+              <div style="font-size:14px;font-weight:800;color:#15171c;">Fetch-once layer</div>
+              <div style="background:#fdf6ee;border-radius:10px;padding:9px 11px;font-size:12px;color:#5a4632;line-height:1.4;"><strong>Cache check</strong> — is it already in the DB &amp; fresh?</div>
+              <div style="background:#fdf6ee;border-radius:10px;padding:9px 11px;font-size:12px;color:#5a4632;line-height:1.4;">Rate-limit &amp; de-dupe requests</div>
+              <div style="background:#fdf6ee;border-radius:10px;padding:9px 11px;font-size:12px;color:#5a4632;line-height:1.4;"><strong>Normalize</strong> to one schema</div>
+            </div>
+          </div>
+
+          <!-- arrow -->
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:54px;padding-top:26px;">
+            <div style="font-size:11px;color:#9a968e;font-weight:700;margin-bottom:3px;">store</div>
+            <div style="font-size:26px;color:#c9c4bb;line-height:1;">→</div>
+          </div>
+
+          <!-- 3 DATABASE -->
+          <div style="flex:1.15;display:flex;flex-direction:column;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:#1b8a5a;text-transform:uppercase;margin-bottom:9px;">③ Your database · cache</div>
+            <div style="flex:1;border:2px solid #1b8a5a;background:#10131a;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:9px;">
+              <div style="font-size:14px;font-weight:800;color:#fff;">Your DB</div>
+              <div style="background:#1b2030;border-radius:10px;padding:9px 11px;"><div style="font-size:12.5px;font-weight:700;color:#fff;">Fundamentals</div><div style="font-size:11px;color:#8b93a6;">quarterly + annual, multi-year</div></div>
+              <div style="background:#1b2030;border-radius:10px;padding:9px 11px;"><div style="font-size:12.5px;font-weight:700;color:#fff;">Prices</div><div style="font-size:11px;color:#8b93a6;">daily close · ATH · YTD</div></div>
+              <div style="background:#1b2030;border-radius:10px;padding:9px 11px;"><div style="font-size:12.5px;font-weight:700;color:#fff;">News + sentiment</div><div style="font-size:11px;color:#8b93a6;">cached LLM scores</div></div>
+              <div style="font-size:11px;font-weight:700;color:#35c98b;text-align:center;margin-top:2px;">↑ shared by all users ↑</div>
+            </div>
+          </div>
+
+          <!-- arrow -->
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:54px;padding-top:26px;">
+            <div style="font-size:11px;color:#9a968e;font-weight:700;margin-bottom:3px;">read</div>
+            <div style="font-size:26px;color:#c9c4bb;line-height:1;">→</div>
+          </div>
+
+          <!-- 4 ENGINE -->
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:#3d4ec2;text-transform:uppercase;margin-bottom:9px;">④ Metric engine</div>
+            <div style="flex:1;border:1.5px solid #d9deff;background:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:9px;">
+              <div style="font-size:14px;font-weight:800;color:#15171c;">Compute</div>
+              <div style="background:#eef0ff;border-radius:10px;padding:9px 11px;font-size:12px;color:#3a3f7a;line-height:1.4;"><strong>QoQ · YoY · CAGR</strong> trends</div>
+              <div style="background:#eef0ff;border-radius:10px;padding:9px 11px;font-size:12px;color:#3a3f7a;line-height:1.4;">Ratios: P/E, ROIC, PEG, D/E…</div>
+              <div style="background:#eef0ff;border-radius:10px;padding:9px 11px;font-size:12px;color:#3a3f7a;line-height:1.4;"><strong>Trajectory</strong> detection</div>
+            </div>
+          </div>
+
+          <!-- arrow -->
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:54px;padding-top:26px;">
+            <div style="font-size:11px;color:#9a968e;font-weight:700;margin-bottom:3px;">prompt</div>
+            <div style="font-size:26px;color:#c9c4bb;line-height:1;">→</div>
+          </div>
+
+          <!-- 5 LLM -->
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:#15171c;text-transform:uppercase;margin-bottom:9px;">⑤ LLM rating</div>
+            <div style="flex:1;border:1.5px solid #e2e2e6;background:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+              <div style="font-size:14px;font-weight:800;color:#15171c;">Rate</div>
+              <div style="font-size:12px;color:#6f6a5f;line-height:1.4;">Reads normalized metrics + news, applies the 5-point check.</div>
+              <div style="background:#10131a;border-radius:12px;padding:12px;text-align:center;margin-top:auto;">
+                <div style="font-size:24px;font-weight:800;color:#fff;line-height:1;">4.3</div>
+                <div style="color:#f5b526;font-size:13px;letter-spacing:2px;margin-top:4px;">★★★★★</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- divider -->
+        <div style="height:1px;background:#ececea;margin:30px 0;"></div>
+
+        <!-- CACHE LOGIC LANE -->
+        <div style="font-size:13px;font-weight:800;color:#26241f;margin-bottom:16px;">What happens on a lookup</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <!-- request -->
+          <div style="border:1.5px solid #e2e2e6;background:#fff;border-radius:14px;padding:14px 16px;flex:none;width:150px;">
+            <div style="font-size:11px;color:#9a968e;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">User asks</div>
+            <div style="font-size:17px;font-weight:800;color:#15171c;font-family:'IBM Plex Mono',monospace;margin-top:3px;">$NVDA</div>
+          </div>
+          <div style="font-size:24px;color:#c9c4bb;flex:none;">→</div>
+          <!-- decision -->
+          <div style="border:1.5px solid #15171c;background:#15171c;border-radius:14px;padding:14px 16px;flex:none;width:170px;">
+            <div style="font-size:11px;color:#8b93a6;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Gateway checks</div>
+            <div style="font-size:15px;font-weight:800;color:#fff;margin-top:3px;">In DB &amp; fresh?</div>
+          </div>
+          <!-- branches -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+            <!-- YES -->
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="font-size:12px;font-weight:800;color:#1b8a5a;background:#e9f6ef;border-radius:8px;padding:6px 11px;flex:none;width:64px;text-align:center;">YES</div>
+              <div style="font-size:22px;color:#cfe9db;flex:none;">→</div>
+              <div style="flex:1;border:1.5px solid #c7ead6;background:#f4fbf7;border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13.5px;font-weight:700;color:#15171c;">Serve straight from cache</span>
+                <span style="font-size:13px;font-weight:800;color:#1b8a5a;font-family:'IBM Plex Mono',monospace;">$0.00</span>
+              </div>
+            </div>
+            <!-- NO -->
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="font-size:12px;font-weight:800;color:#b5621b;background:#fdf0e6;border-radius:8px;padding:6px 11px;flex:none;width:64px;text-align:center;">NO</div>
+              <div style="font-size:22px;color:#f0e2d4;flex:none;">→</div>
+              <div style="flex:1;display:flex;align-items:center;gap:9px;">
+                <div style="flex:1;border:1.5px solid #f0e2d4;background:#fdf9f4;border-radius:12px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:13px;font-weight:700;color:#15171c;">Fetch once</span>
+                  <span style="font-size:12px;font-weight:800;color:#b5621b;font-family:'IBM Plex Mono',monospace;">1 paid call</span>
+                </div>
+                <span style="font-size:18px;color:#c9c4bb;flex:none;">→</span>
+                <div style="flex:1;border:1.5px solid #1b8a5a;background:#10131a;border-radius:12px;padding:11px 13px;text-align:center;">
+                  <span style="font-size:13px;font-weight:700;color:#fff;">Store in DB → serve</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- cost banner -->
+        <div style="margin-top:22px;background:#e9f6ef;border:1px solid #c7ead6;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:18px;">
+          <div style="font-size:13.5px;line-height:1.5;color:#22503a;flex:1;text-wrap:pretty;"><strong>User #1 pays one API call. Users #2 → ∞ are cache hits → $0.</strong> A popular ticker is paid for once, then earns its keep across thousands of views. Your API bill scales with <em>unique tickers refreshed</em>, not with traffic.</div>
+          <div style="flex:none;display:flex;gap:22px;text-align:center;">
+            <div><div style="font-size:24px;font-weight:800;color:#15171c;">1</div><div style="font-size:11px;color:#6f8a78;font-weight:600;">paid call</div></div>
+            <div style="font-size:22px;color:#a7d8bf;align-self:center;">→</div>
+            <div><div style="font-size:24px;font-weight:800;color:#1b8a5a;">∞</div><div style="font-size:11px;color:#6f8a78;font-weight:600;">free reads</div></div>
+          </div>
+        </div>
+
+        <!-- refresh cadence -->
+        <div style="margin-top:14px;display:flex;gap:12px;">
+          <div style="flex:1;border:1px solid #ececea;border-radius:13px;padding:13px 15px;background:#fff;">
+            <div style="font-size:11px;font-weight:800;color:#9a968e;text-transform:uppercase;letter-spacing:0.05em;">Fundamentals</div>
+            <div style="font-size:14px;font-weight:800;color:#15171c;margin-top:3px;">Refresh on earnings</div>
+            <div style="font-size:11.5px;color:#9a968e;margin-top:1px;">~4× / year per company</div>
+          </div>
+          <div style="flex:1;border:1px solid #ececea;border-radius:13px;padding:13px 15px;background:#fff;">
+            <div style="font-size:11px;font-weight:800;color:#9a968e;text-transform:uppercase;letter-spacing:0.05em;">Prices</div>
+            <div style="font-size:14px;font-weight:800;color:#15171c;margin-top:3px;">Daily close</div>
+            <div style="font-size:11.5px;color:#9a968e;margin-top:1px;">one batch job after market</div>
+          </div>
+          <div style="flex:1;border:1px solid #ececea;border-radius:13px;padding:13px 15px;background:#fff;">
+            <div style="font-size:11px;font-weight:800;color:#9a968e;text-transform:uppercase;letter-spacing:0.05em;">News</div>
+            <div style="font-size:14px;font-weight:800;color:#15171c;margin-top:3px;">Hourly poll</div>
+            <div style="font-size:11.5px;color:#9a968e;margin-top:1px;">sentiment scored once, cached</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===================== IN-APP SOURCES SCREEN ===================== -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">In-app · Sources &amp; method</div>
+      <div style="width:360px;height:812px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.16);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#15171c;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 18px 14px;">
+          <span style="font-size:22px;color:#15171c;">‹</span>
+          <span style="font-size:14px;font-weight:700;color:#15171c;">How we rate</span>
+          <span style="font-size:18px;color:#b8b4ad;">ⓘ</span>
+        </div>
+
+        <div style="flex:1;overflow:hidden;padding:0 20px;">
+          <div style="font-size:21px;font-weight:800;color:#15171c;letter-spacing:-0.01em;line-height:1.2;">Where the numbers come from</div>
+          <div style="font-size:13.5px;color:#8a8780;margin-top:8px;line-height:1.45;">Every rating is built from primary filings and market data — never opinion. Same inputs for every user.</div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px;">
+            <div style="border:1px solid #ececf0;border-radius:15px;padding:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:14px;font-weight:800;color:#15171c;">Fundamentals</div>
+                <span style="font-size:10.5px;font-weight:700;color:#1b8a5a;background:#e9f6ef;padding:3px 8px;border-radius:7px;">Q4'25 · Feb 20</span>
+              </div>
+              <div style="font-size:12.5px;color:#9a968e;margin-top:5px;line-height:1.4;">SEC filings (10-Q / 10-K), as originally reported. 5+ years of history.</div>
+            </div>
+            <div style="border:1px solid #ececf0;border-radius:15px;padding:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:14px;font-weight:800;color:#15171c;">Prices</div>
+                <span style="font-size:10.5px;font-weight:700;color:#1b8a5a;background:#e9f6ef;padding:3px 8px;border-radius:7px;">Today · close</span>
+              </div>
+              <div style="font-size:12.5px;color:#9a968e;margin-top:5px;line-height:1.4;">Exchange end-of-day. Powers YTD and distance-from-ATH.</div>
+            </div>
+            <div style="border:1px solid #ececf0;border-radius:15px;padding:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:14px;font-weight:800;color:#15171c;">News</div>
+                <span style="font-size:10.5px;font-weight:700;color:#1b8a5a;background:#e9f6ef;padding:3px 8px;border-radius:7px;">2h ago</span>
+              </div>
+              <div style="font-size:12.5px;color:#9a968e;margin-top:5px;line-height:1.4;">Wire services; sentiment scored by AI, shown alongside fundamentals.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:18px;background:#f6f6f8;border-radius:15px;padding:15px;">
+            <div style="font-size:13px;font-weight:800;color:#15171c;">The method</div>
+            <div style="font-size:12.5px;color:#6f6a5f;margin-top:6px;line-height:1.5;">We compute QoQ/YoY trends and ratios, then an AI applies the same 5-point check to every stock: <strong>growing → profitable → fairly priced → safe → can keep winning</strong>.</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding:13px 14px;border:1px dashed #d9deff;border-radius:13px;background:#fafbff;">
+            <span style="font-size:15px;">↺</span>
+            <div style="font-size:12px;color:#3a3f7a;line-height:1.4;"><strong>Cached &amp; shared.</strong> Fetched once, refreshed on new earnings &amp; daily close — so every user sees the same, reproducible rating.</div>
+          </div>
+        </div>
+
+        <div style="padding:12px 20px 22px;">
+          <div style="font-size:11px;color:#b3afa7;text-align:center;line-height:1.45;">Informational only · not financial advice. Data may be delayed.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

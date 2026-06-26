@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -H \"User-Agent: FundaApp research@example.com\" \"https://data.sec.gov/api/xbrl/companyconcept/CIK0000320193/us-gaap/CashAndCashEquivalentsAtCarryingValue.json\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -H \"User-Agent: FundaApp research@example.com\" \"https://data.sec.gov/api/xbrl/companyconcept/CIK0000320193/us-gaap/PaymentsToAcquirePropertyPlantAndEquipment.json\")",
+      "Bash(npx ts-node *)",
+      "Bash(curl -s \"http://localhost:3001/api/stocks/CEG\" -o /dev/null)"
+    ]
+  }
+}

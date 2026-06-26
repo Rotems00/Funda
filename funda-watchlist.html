@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funda — Watchlist (reference implementation)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#070b12;font-family:'Manrope',sans-serif;color:#e6eaf2;}
+  .page{min-height:100vh;background:radial-gradient(1100px 520px at 85% -8%,rgba(16,185,129,0.12),transparent 60%),#070b12;padding:26px 0 70px;}
+  .shell{max-width:1080px;margin:0 auto;padding:0 26px;}
+  .navlink{font-size:13.5px;font-weight:700;color:#7c8aa0;cursor:pointer;transition:color .14s;}
+  .navlink:hover{color:#fff;}
+  .navlink.active{color:#fff;font-weight:800;}
+  .stat{background:#0e1622;border:1px solid #1c2736;border-radius:14px;padding:13px 18px;min-width:118px;}
+  .sortbtn{font-size:12.5px;font-weight:700;color:#9aa7bd;background:#0e1622;border:1px solid #1c2736;padding:6px 13px;border-radius:8px;cursor:pointer;}
+  .sortbtn.active{color:#0b1220;background:#34d399;border-color:#34d399;font-weight:800;}
+  /* the row card — hover handled in JS-free CSS */
+  .wl-card{display:flex;align-items:center;gap:20px;background:#0c1320;border:1px solid #18222f;border-radius:17px;padding:17px 20px;cursor:pointer;transition:all .15s;}
+  .wl-card:hover{background:#0e1726;transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.4);}
+  .wl-remove{flex:none;width:30px;height:30px;border-radius:9px;background:#141d2b;border:1px solid #1c2736;display:flex;align-items:center;justify-content:center;color:#5f6b80;font-size:14px;transition:all .14s;}
+  .wl-remove:hover{background:#3a1620;color:#fb7185;border-color:#5b2230;}
+  @media (max-width:860px){
+    .wl-pillars,.wl-spark{display:none !important;}
+    .wl-name{width:auto !important;flex:1 !important;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="shell">
+
+    <!-- NAV -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(150deg,#10b981,#047857);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(16,185,129,0.35);">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M5 16.5L10 11l3.2 3.2L19 7.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7.5h4v4" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="#fff" stroke-opacity="0.5" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </div>
+        <div style="font-size:21px;font-weight:800;letter-spacing:-0.02em;color:#fff;">Funda<span style="color:#34d399;">.</span></div>
+      </div>
+      <form onsubmit="return false;" style="flex:1;max-width:420px;display:flex;align-items:center;gap:10px;background:#0e1622;border:1px solid #1c2736;border-radius:13px;padding:11px 15px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5f6b80" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input placeholder="Search ticker — MELI, NVDA, PLTR…" style="flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:#e6eaf2;font-weight:600;"/>
+      </form>
+      <div style="display:flex;align-items:center;gap:22px;">
+        <span class="navlink">Top Rated</span>
+        <span class="navlink active">Watchlist</span>
+      </div>
+    </div>
+
+    <!-- HEADER + SUMMARY -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-top:34px;">
+      <div>
+        <div style="font-size:27px;font-weight:800;color:#fff;letter-spacing:-0.025em;">Your Watchlist</div>
+        <div style="font-size:13.5px;color:#7c8aa0;font-weight:600;margin-top:5px;" id="wlMeta">4 of 10 saved · sorted by rating</div>
+      </div>
+      <div style="display:flex;gap:11px;">
+        <div class="stat"><div style="font-size:11px;font-weight:700;color:#5f6b80;letter-spacing:0.06em;text-transform:uppercase;">Avg rating</div><div style="display:flex;align-items:baseline;gap:5px;margin-top:4px;"><span style="font-size:22px;font-weight:800;color:#fff;" id="wlAvg">2.5</span><span style="font-size:12px;color:#fbbf24;">★</span></div></div>
+        <div class="stat"><div style="font-size:11px;font-weight:700;color:#5f6b80;letter-spacing:0.06em;text-transform:uppercase;">Top pick</div><div style="font-size:22px;font-weight:800;color:#34d399;margin-top:4px;" id="wlTop">MELI</div></div>
+        <div class="stat"><div style="font-size:11px;font-weight:700;color:#5f6b80;letter-spacing:0.06em;text-transform:uppercase;">Needs review</div><div style="font-size:22px;font-weight:800;color:#f97316;margin-top:4px;" id="wlReview">2</div></div>
+      </div>
+    </div>
+
+    <!-- SORT BAR -->
+    <div style="display:flex;align-items:center;gap:8px;margin-top:24px;">
+      <span style="font-size:12px;font-weight:700;color:#5f6b80;">Sort:</span>
+      <span class="sortbtn active" data-sort="rating">Rating</span>
+      <span class="sortbtn" data-sort="price">Price</span>
+      <span class="sortbtn" data-sort="name">Name</span>
+    </div>
+
+    <!-- CARDS -->
+    <div id="wlCards" style="display:flex;flex-direction:column;gap:13px;margin-top:16px;"></div>
+
+    <!-- EMPTY STATE (shown when list is empty) -->
+    <div id="wlEmpty" style="display:none;text-align:center;padding:60px 20px;">
+      <div style="font-size:40px;">🔭</div>
+      <div style="font-size:18px;font-weight:800;color:#fff;margin-top:12px;">Your watchlist is empty</div>
+      <div style="font-size:13.5px;color:#7c8aa0;margin-top:6px;">Search any ticker above and tap “+ Watchlist” to track it here.</div>
+    </div>
+
+    <div style="text-align:center;font-size:11px;color:#3f4b5e;margin-top:30px;">Informational only · not financial advice</div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// DATA — replace with the user's saved watchlist from your API.
+//   spark = recent price/rating trend points (any length).
+//   pillars = [Growing, Profitable, Valuation, Safe, Keep-winning] each 0–5.
+// ============================================================================
+let STOCKS = [
+  { t:'MELI', name:'MercadoLibre, Inc',          rating:4.0, priceNum:1583.70, price:'$1,583.70', chg:'+1.4%',  up:true,
+    color:'#10b981', spark:[5.0,5.2,4.8,5.6,5.9,6.1,6.4,6.7,7.4,8.0,9.1,10.7], pillars:[4.8,4.2,3.6,3.9,4.7], tag:'Quality compounder', tagColor:'#34d399' },
+  { t:'JOBY', name:'Joby Aviation, Inc.',         rating:3.0, priceNum:9.60,    price:'$9.60',     chg:'+4.2%',  up:true,
+    color:'#0ea5e9', spark:[6,5.4,5.8,5.2,4.8,5.1,4.6,5.0,4.4,4.8,5.2,4.9],     pillars:[3.6,2.1,2.8,3.4,3.5], tag:'Pre-profit, watch cash', tagColor:'#38bdf8' },
+  { t:'SOUN', name:'SoundHound AI, Inc. Class A', rating:2.0, priceNum:6.40,    price:'$6.40',     chg:'\u22122.1%', up:false,
+    color:'#f59e0b', spark:[4,4.6,4.2,5.0,4.4,3.8,4.2,3.6,4.0,3.4,3.8,3.2],     pillars:[3.8,1.6,1.9,2.6,2.4], tag:'Speculative', tagColor:'#fbbf24' },
+  { t:'ACHR', name:'Archer Aviation Inc.',        rating:1.0, priceNum:5.30,    price:'$5.30',     chg:'\u22123.4%', up:false,
+    color:'#f97316', spark:[5,4.4,4.8,4.0,3.6,4.0,3.4,3.0,3.4,2.8,3.0,2.5],     pillars:[2.2,1.0,1.4,2.0,1.8], tag:'High risk', tagColor:'#fb7185' }
+];
+let sortKey = 'rating';
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+const ratingColor = (r)=> r>=3.5?'#34d399': r>=2.5?'#fbbf24': r>=1.5?'#f59e0b':'#fb7185';
+
+function stars(r){
+  const pct=(r/5*100).toFixed(0);
+  return '<span style="position:relative;display:inline-flex;color:#2c3340;font-size:13px;letter-spacing:1.5px;">★★★★★'
+    +'<span style="position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#fbbf24;width:'+pct+'%;">★★★★★</span></span>';
+}
+function spark(arr,color){
+  const w=120,h=40,max=Math.max(...arr),min=Math.min(...arr),rng=(max-min)||1;
+  const pts=arr.map((v,i)=>{const x=(i/(arr.length-1))*w;const y=h-4-((v-min)/rng)*(h-8);return x.toFixed(1)+','+y.toFixed(1);});
+  const last=pts[pts.length-1].split(','), id='g'+Math.random().toString(36).slice(2,7);
+  return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" style="width:120px;height:40px;display:block;">'
+    +'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity="0.3"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+    +'<polygon points="0,'+h+' '+pts.join(' ')+' '+w+','+h+'" fill="url(#'+id+')"/>'
+    +'<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'<circle cx="'+last[0]+'" cy="'+last[1]+'" r="2.6" fill="'+color+'"/></svg>';
+}
+// 5 mini vertical bars = the company's "pillar shape" at a glance
+function pillarBars(arr){
+  const names=['G','P','V','S','W'];
+  return '<div class="wl-pillars" style="display:flex;gap:9px;">'+arr.map((v,i)=>{
+    const c=v>=3.5?'#34d399':v>=2.5?'#fbbf24':'#fb7185';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;">'
+      +'<div style="width:6px;height:30px;border-radius:3px;background:#1c2736;display:flex;align-items:flex-end;overflow:hidden;"><div style="width:100%;height:'+(v/5*100)+'%;background:'+c+';border-radius:3px;"></div></div>'
+      +'<span style="font-size:9px;font-weight:800;color:#4a5568;">'+names[i]+'</span></div>';
+  }).join('')+'</div>';
+}
+
+// ============================================================================
+// RENDER
+// ============================================================================
+function sortStocks(){
+  const a=[...STOCKS];
+  if(sortKey==='rating') a.sort((x,y)=>y.rating-x.rating);
+  if(sortKey==='price')  a.sort((x,y)=>y.priceNum-x.priceNum);
+  if(sortKey==='name')   a.sort((x,y)=>x.t.localeCompare(y.t));
+  return a;
+}
+function renderSummary(){
+  const avg = STOCKS.length ? (STOCKS.reduce((s,x)=>s+x.rating,0)/STOCKS.length) : 0;
+  const top = [...STOCKS].sort((a,b)=>b.rating-a.rating)[0];
+  document.getElementById('wlAvg').textContent = avg.toFixed(1);
+  document.getElementById('wlTop').textContent = top ? top.t : '—';
+  document.getElementById('wlReview').textContent = STOCKS.filter(s=>s.rating<2.5).length;
+  document.getElementById('wlMeta').textContent = STOCKS.length+' of 10 saved · sorted by '+sortKey;
+}
+function render(){
+  const wrap=document.getElementById('wlCards');
+  const empty=document.getElementById('wlEmpty');
+  if(!STOCKS.length){ wrap.innerHTML=''; empty.style.display='block'; renderSummary(); return; }
+  empty.style.display='none';
+  wrap.innerHTML = sortStocks().map(s=>{
+    const rc=ratingColor(s.rating);
+    return `
+      <div class="wl-card" data-ticker="${s.t}" onmouseover="this.style.borderColor='${s.color}'" onmouseout="this.style.borderColor='#18222f'">
+        <div style="flex:none;width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,${s.color},${s.color}bb);color:#06210f;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;">${s.t[0]}</div>
+        <div class="wl-name" style="flex:none;width:150px;min-width:0;">
+          <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.01em;">${s.t}</div>
+          <div style="font-size:11.5px;color:#6b7689;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
+          <div style="display:inline-block;font-size:10px;font-weight:800;color:${s.tagColor};background:${s.tagColor}1a;padding:2px 7px;border-radius:6px;margin-top:7px;">${s.tag}</div>
+        </div>
+        <div style="flex:none;">${pillarBars(s.pillars)}</div>
+        <div class="wl-spark" style="flex:1;display:flex;justify-content:center;">${spark(s.spark,s.color)}</div>
+        <div style="flex:none;text-align:right;width:96px;">
+          <div style="font-size:15px;font-weight:800;color:#fff;">${s.price}</div>
+          <div style="font-size:12px;font-weight:700;color:${s.up?'#34d399':'#fb7185'};margin-top:2px;">${s.chg}</div>
+        </div>
+        <div style="flex:none;text-align:right;width:78px;">
+          <div style="font-size:20px;font-weight:800;color:${rc};line-height:1;">${s.rating.toFixed(1)}</div>
+          <div style="margin-top:4px;">${stars(s.rating)}</div>
+        </div>
+        <div class="wl-remove" data-remove="${s.t}">×</div>
+      </div>`;
+  }).join('');
+
+  // wire row click → detail, and × → remove
+  wrap.querySelectorAll('[data-ticker]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('[data-remove]')) return;
+      const t = el.dataset.ticker;
+      console.log('Open', t);            // e.g. window.location.href='/stock/'+t;
+    });
+  });
+  wrap.querySelectorAll('[data-remove]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      STOCKS = STOCKS.filter(s=>s.t!==el.dataset.remove);
+      render(); renderSummary();
+    });
+  });
+  renderSummary();
+}
+
+// sort wiring
+document.querySelectorAll('[data-sort]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    sortKey=b.dataset.sort;
+    document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('active', x===b));
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>

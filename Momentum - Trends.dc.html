@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#e7e5df;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:48px;background:#e7e5df;font-family:'Manrope',sans-serif;">
+
+  <div style="max-width:620px;margin-bottom:34px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9a958a;">Stock Rating App · Momentum</div>
+    <div style="font-size:28px;font-weight:800;color:#26241f;margin-top:8px;letter-spacing:-0.02em;">Zoom out: the trend, not the snapshot</div>
+    <div style="font-size:15px;line-height:1.5;color:#6f6a5f;margin-top:10px;text-wrap:pretty;">We rate on the <strong>trajectory</strong> over years — every metric tracked quarter-by-quarter with QoQ and YoY, plus whether it's accelerating, steady or cooling. The trend is what actually feeds the score. Shown on MELI, Direction A.</div>
+  </div>
+
+  <div style="display:flex;gap:40px;align-items:flex-start;">
+
+    <!-- ========================= 1 · MOMENTUM OVERVIEW ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">1 · Momentum overview</div>
+      <div style="width:360px;height:812px;background:#f6f6f8;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.16);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#15171c;background:#fff;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <!-- app bar + tabs -->
+        <div style="background:#fff;padding:6px 18px 0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:22px;color:#15171c;">‹</span>
+            <span style="font-size:14px;font-weight:700;color:#15171c;">MELI · Momentum</span>
+            <span style="font-size:18px;color:#b8b4ad;">☆</span>
+          </div>
+          <div style="display:flex;gap:20px;margin-top:12px;border-bottom:1px solid #eee;">
+            <span style="font-size:13.5px;font-weight:600;color:#9a968e;padding-bottom:10px;">Overview</span>
+            <span style="font-size:13.5px;font-weight:800;color:#15171c;padding-bottom:9px;border-bottom:2.5px solid #15171c;">Momentum</span>
+            <span style="font-size:13.5px;font-weight:600;color:#9a968e;padding-bottom:10px;">Financials</span>
+          </div>
+        </div>
+
+        <!-- controls -->
+        <div style="background:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;">
+          <div style="display:flex;gap:5px;background:#f3f3f5;border-radius:10px;padding:4px;">
+            <span style="font-size:12.5px;font-weight:800;color:#15171c;background:#fff;padding:7px 14px;border-radius:7px;box-shadow:0 1px 2px rgba(0,0,0,0.08);">Quarterly</span>
+            <span style="font-size:12.5px;font-weight:600;color:#9a968e;padding:7px 14px;">Annual</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <span style="font-size:12px;font-weight:700;color:#9a968e;padding:6px 9px;">2Y</span>
+            <span style="font-size:12px;font-weight:800;color:#15171c;background:#ececef;padding:6px 10px;border-radius:8px;">5Y</span>
+            <span style="font-size:12px;font-weight:700;color:#9a968e;padding:6px 9px;">Max</span>
+          </div>
+        </div>
+
+        <div style="flex:1;overflow:hidden;padding:4px 18px 0;display:flex;flex-direction:column;gap:11px;">
+
+          <!-- metric card: Revenue -->
+          <div style="background:#fff;border-radius:18px;padding:15px;box-shadow:0 1px 3px rgba(30,26,18,0.05);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-size:14px;font-weight:800;color:#15171c;">Revenue</div>
+                <div style="font-size:19px;font-weight:800;color:#15171c;margin-top:2px;">$5.6B<span style="font-size:12px;font-weight:600;color:#9a968e;"> · Q4'25</span></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:#1b8a5a;background:#e9f6ef;padding:5px 9px;border-radius:8px;">Steady ↗</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:46px;margin-top:13px;">
+              <div style="flex:1;height:60%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:66%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:71%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:77%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:80%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:87%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:94%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:100%;background:#1b8a5a;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="display:flex;gap:18px;margin-top:12px;border-top:1px solid #f2f2f4;padding-top:11px;">
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">YoY </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+37%</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">QoQ </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+6%</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">5Y CAGR </span><span style="font-size:13.5px;font-weight:800;color:#15171c;">+41%</span></div>
+            </div>
+          </div>
+
+          <!-- metric card: EPS -->
+          <div style="background:#fff;border-radius:18px;padding:15px;box-shadow:0 1px 3px rgba(30,26,18,0.05);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-size:14px;font-weight:800;color:#15171c;">EPS</div>
+                <div style="font-size:19px;font-weight:800;color:#15171c;margin-top:2px;">$11.60<span style="font-size:12px;font-weight:600;color:#9a968e;"> · Q4'25</span></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:#1b8a5a;background:#e9f6ef;padding:5px 9px;border-radius:8px;">Accelerating ↗</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:46px;margin-top:13px;">
+              <div style="flex:1;height:55%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:59%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:66%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:71%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:78%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:85%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:92%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:100%;background:#1b8a5a;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="display:flex;gap:18px;margin-top:12px;border-top:1px solid #f2f2f4;padding-top:11px;">
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">YoY </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+71%</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">QoQ </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+8%</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">vs Rev </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">faster ✓</span></div>
+            </div>
+          </div>
+
+          <!-- metric card: Gross margin -->
+          <div style="background:#fff;border-radius:18px;padding:15px;box-shadow:0 1px 3px rgba(30,26,18,0.05);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-size:14px;font-weight:800;color:#15171c;">Gross margin</div>
+                <div style="font-size:19px;font-weight:800;color:#15171c;margin-top:2px;">46.4%<span style="font-size:12px;font-weight:600;color:#9a968e;"> · Q4'25</span></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:#1b8a5a;background:#e9f6ef;padding:5px 9px;border-radius:8px;">Expanding ↗</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:46px;margin-top:13px;">
+              <div style="flex:1;height:88%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:88%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:91%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:91%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:93%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:96%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:97%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:100%;background:#1b8a5a;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="display:flex;gap:18px;margin-top:12px;border-top:1px solid #f2f2f4;padding-top:11px;">
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">YoY </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+1.2pt</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">QoQ </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+0.3pt</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">8Q trend </span><span style="font-size:13.5px;font-weight:800;color:#15171c;">up</span></div>
+            </div>
+          </div>
+
+          <!-- metric card: FCF -->
+          <div style="background:#fff;border-radius:18px;padding:15px;box-shadow:0 1px 3px rgba(30,26,18,0.05);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-size:14px;font-weight:800;color:#15171c;">Free cash flow</div>
+                <div style="font-size:19px;font-weight:800;color:#15171c;margin-top:2px;">$1.7B<span style="font-size:12px;font-weight:600;color:#9a968e;"> · Q4'25</span></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:#b5621b;background:#fdf0e6;padding:5px 9px;border-radius:8px;">Choppy ↗</span>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:46px;margin-top:13px;">
+              <div style="flex:1;height:50%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:72%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:61%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:80%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:68%;background:#cfe9db;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:88%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:79%;background:#a7d8bf;border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:100%;background:#1b8a5a;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="display:flex;gap:18px;margin-top:12px;border-top:1px solid #f2f2f4;padding-top:11px;">
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">YoY </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+52%</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">QoQ </span><span style="font-size:13.5px;font-weight:800;color:#1b8a5a;">+11%</span></div>
+              <div><span style="font-size:11px;color:#9a968e;font-weight:600;">positive </span><span style="font-size:13.5px;font-weight:800;color:#15171c;">7 Qs</span></div>
+            </div>
+          </div>
+
+          <div style="height:6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= 2 · REVENUE DEEP DIVE ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">2 · Metric deep-dive</div>
+      <div style="width:360px;height:812px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.16);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#15171c;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 18px 14px;">
+          <span style="font-size:22px;color:#15171c;">‹</span>
+          <span style="font-size:14px;font-weight:700;color:#15171c;">Revenue · MELI</span>
+          <span style="font-size:18px;color:#b8b4ad;">⤢</span>
+        </div>
+
+        <div style="flex:1;overflow:hidden;padding:0 20px;">
+          <div style="display:flex;align-items:baseline;gap:10px;">
+            <div style="font-size:34px;font-weight:800;color:#15171c;letter-spacing:-0.02em;">$5.6B</div>
+            <div style="font-size:13px;font-weight:700;color:#1b8a5a;">▲ +37% YoY</div>
+          </div>
+          <div style="font-size:12.5px;color:#9a968e;margin-top:2px;">Quarterly revenue · last 12 quarters</div>
+
+          <!-- chart -->
+          <div style="margin-top:18px;background:#fafafb;border:1px solid #f0f0f3;border-radius:16px;padding:14px 12px 8px;">
+            <svg viewBox="0 0 320 150" style="width:100%;height:auto;display:block;" preserveAspectRatio="none">
+              <line x1="10" y1="20" x2="310" y2="20" stroke="#ededf0" stroke-width="1"></line>
+              <line x1="10" y1="75" x2="310" y2="75" stroke="#ededf0" stroke-width="1"></line>
+              <line x1="10" y1="130" x2="310" y2="130" stroke="#e2e2e6" stroke-width="1"></line>
+              <polygon points="10,86 37.3,79.4 64.5,72.8 91.8,66.2 119.1,61.8 146.4,56.3 173.6,51.9 200.9,45.3 228.2,42 255.5,34.3 282.7,26.6 310,20 310,130 10,130" fill="#1b8a5a" fill-opacity="0.10"></polygon>
+              <polyline points="10,86 37.3,79.4 64.5,72.8 91.8,66.2 119.1,61.8 146.4,56.3 173.6,51.9 200.9,45.3 228.2,42 255.5,34.3 282.7,26.6 310,20" fill="none" stroke="#1b8a5a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+              <circle cx="310" cy="20" r="4" fill="#1b8a5a"></circle>
+              <circle cx="310" cy="20" r="7" fill="#1b8a5a" fill-opacity="0.2"></circle>
+            </svg>
+            <div style="display:flex;justify-content:space-between;padding:6px 4px 0;font-size:11px;font-weight:700;color:#b3afa7;">
+              <span>2023</span><span>2024</span><span>2025</span>
+            </div>
+          </div>
+
+          <!-- range -->
+          <div style="display:flex;gap:6px;justify-content:center;margin-top:13px;">
+            <span style="font-size:12px;font-weight:700;color:#9a968e;padding:6px 11px;">1Y</span>
+            <span style="font-size:12px;font-weight:800;color:#fff;background:#10131a;padding:6px 12px;border-radius:8px;">3Y</span>
+            <span style="font-size:12px;font-weight:700;color:#9a968e;padding:6px 11px;">5Y</span>
+            <span style="font-size:12px;font-weight:700;color:#9a968e;padding:6px 11px;">Max</span>
+          </div>
+
+          <!-- stat grid -->
+          <div style="display:flex;gap:9px;margin-top:16px;">
+            <div style="flex:1;background:#f6f6f8;border-radius:13px;padding:11px 12px;"><div style="font-size:10.5px;font-weight:700;color:#9a968e;text-transform:uppercase;letter-spacing:0.05em;">QoQ</div><div style="font-size:16px;font-weight:800;color:#1b8a5a;margin-top:2px;">+6%</div></div>
+            <div style="flex:1;background:#f6f6f8;border-radius:13px;padding:11px 12px;"><div style="font-size:10.5px;font-weight:700;color:#9a968e;text-transform:uppercase;letter-spacing:0.05em;">YoY</div><div style="font-size:16px;font-weight:800;color:#1b8a5a;margin-top:2px;">+37%</div></div>
+            <div style="flex:1;background:#f6f6f8;border-radius:13px;padding:11px 12px;"><div style="font-size:10.5px;font-weight:700;color:#9a968e;text-transform:uppercase;letter-spacing:0.05em;">3Y CAGR</div><div style="font-size:16px;font-weight:800;color:#15171c;margin-top:2px;">+41%</div></div>
+          </div>
+
+          <!-- recent quarters table -->
+          <div style="margin-top:18px;">
+            <div style="display:flex;font-size:10.5px;font-weight:800;color:#b3afa7;text-transform:uppercase;letter-spacing:0.05em;padding:0 4px 8px;">
+              <span style="flex:1.2;">Quarter</span><span style="flex:1;text-align:right;">Revenue</span><span style="flex:1;text-align:right;">YoY</span><span style="flex:1;text-align:right;">QoQ</span>
+            </div>
+            <div style="display:flex;font-size:13px;color:#15171c;padding:9px 4px;border-top:1px solid #f2f2f4;"><span style="flex:1.2;font-weight:700;">Q4 2025</span><span style="flex:1;text-align:right;font-weight:700;">$5.6B</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+37%</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+6%</span></div>
+            <div style="display:flex;font-size:13px;color:#15171c;padding:9px 4px;border-top:1px solid #f2f2f4;"><span style="flex:1.2;font-weight:700;">Q3 2025</span><span style="flex:1;text-align:right;font-weight:700;">$5.3B</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+39%</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+8%</span></div>
+            <div style="display:flex;font-size:13px;color:#15171c;padding:9px 4px;border-top:1px solid #f2f2f4;"><span style="flex:1.2;font-weight:700;">Q2 2025</span><span style="flex:1;text-align:right;font-weight:700;">$4.9B</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+40%</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+9%</span></div>
+            <div style="display:flex;font-size:13px;color:#15171c;padding:9px 4px;border-top:1px solid #f2f2f4;"><span style="flex:1.2;font-weight:700;">Q1 2025</span><span style="flex:1;text-align:right;font-weight:700;">$4.5B</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+36%</span><span style="flex:1;text-align:right;color:#1b8a5a;font-weight:700;">+5%</span></div>
+          </div>
+        </div>
+
+        <div style="padding:12px 20px 22px;background:#fff;border-top:1px solid #f2f2f4;">
+          <div style="display:flex;gap:9px;align-items:flex-start;background:#eef0ff;border-radius:13px;padding:12px 13px;">
+            <span style="font-size:13px;flex:none;">↳</span>
+            <div style="font-size:12.5px;line-height:1.45;color:#3a3f7a;"><strong>Feeds "Is it growing?"</strong> — 12 straight up quarters with YoY holding in the high-30s scores this pillar 4.8/5.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= 3 · WHAT THE TREND TELLS US ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="font-size:13px;font-weight:700;color:#26241f;margin-bottom:13px;">3 · Trend → rating</div>
+      <div style="width:360px;height:812px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.16);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:700;color:#15171c;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 18px 14px;">
+          <span style="font-size:22px;color:#15171c;">‹</span>
+          <span style="font-size:14px;font-weight:700;color:#15171c;">Trend read</span>
+          <span style="font-size:18px;color:#b8b4ad;">☆</span>
+        </div>
+
+        <div style="flex:1;overflow:hidden;padding:0 20px;">
+          <div style="font-size:21px;font-weight:800;color:#15171c;letter-spacing:-0.01em;line-height:1.2;">What 5 years of data tells us</div>
+          <div style="font-size:13.5px;color:#8a8780;margin-top:8px;line-height:1.45;">The patterns the AI weighs — not just the latest print.</div>
+
+          <div style="display:flex;flex-direction:column;gap:1px;margin-top:18px;">
+            <!-- finding + -->
+            <div style="display:flex;gap:12px;padding:14px 0;border-top:1px solid #f2f2f4;align-items:flex-start;">
+              <span style="width:24px;height:24px;border-radius:50%;background:#e9f6ef;color:#1b8a5a;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">✓</span>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;line-height:1.35;">12 straight quarters of 30%+ revenue growth</div><div style="font-size:12px;color:#9a968e;margin-top:2px;">Durable demand, not a one-off spike</div></div>
+            </div>
+            <!-- finding + -->
+            <div style="display:flex;gap:12px;padding:14px 0;border-top:1px solid #f2f2f4;align-items:flex-start;">
+              <span style="width:24px;height:24px;border-radius:50%;background:#e9f6ef;color:#1b8a5a;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">✓</span>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;line-height:1.35;">EPS compounding faster than revenue</div><div style="font-size:12px;color:#9a968e;margin-top:2px;">Operating leverage is real and widening</div></div>
+            </div>
+            <!-- finding + -->
+            <div style="display:flex;gap:12px;padding:14px 0;border-top:1px solid #f2f2f4;align-items:flex-start;">
+              <span style="width:24px;height:24px;border-radius:50%;background:#e9f6ef;color:#1b8a5a;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">✓</span>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;line-height:1.35;">Gross margin expanded 6 of last 8 quarters</div><div style="font-size:12px;color:#9a968e;margin-top:2px;">Pricing power holding through growth</div></div>
+            </div>
+            <!-- finding caution -->
+            <div style="display:flex;gap:12px;padding:14px 0;border-top:1px solid #f2f2f4;align-items:flex-start;">
+              <span style="width:24px;height:24px;border-radius:50%;background:#fdf0e6;color:#b5621b;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">!</span>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;line-height:1.35;">Growth gently decelerating: 41% → 37% YoY</div><div style="font-size:12px;color:#9a968e;margin-top:2px;">Law of large numbers — watch, don't panic</div></div>
+            </div>
+            <!-- finding + -->
+            <div style="display:flex;gap:12px;padding:14px 0;border-top:1px solid #f2f2f4;border-bottom:1px solid #f2f2f4;align-items:flex-start;">
+              <span style="width:24px;height:24px;border-radius:50%;background:#e9f6ef;color:#1b8a5a;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">✓</span>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#15171c;line-height:1.35;">Free cash flow positive &amp; rising 7 quarters</div><div style="font-size:12px;color:#9a968e;margin-top:2px;">Self-funding its own expansion</div></div>
+            </div>
+          </div>
+
+          <!-- trend contribution -->
+          <div style="margin-top:18px;background:#10131a;border-radius:18px;padding:18px;color:#fff;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:12.5px;font-weight:700;color:#8b93a6;letter-spacing:0.04em;">TRAJECTORY SCORE</div>
+              <span style="font-size:11px;font-weight:800;color:#0c0f16;background:#35c98b;padding:4px 9px;border-radius:7px;">STRONG UPTREND</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-top:8px;">
+              <div style="font-size:32px;font-weight:800;line-height:1;">4.4</div>
+              <div style="font-size:13px;color:#aab2c4;">/ 5 · lifts the overall rating</div>
+            </div>
+            <div style="font-size:12.5px;line-height:1.45;color:#d4d8e0;margin-top:10px;text-wrap:pretty;">A consistent multi-year uptrend with mild deceleration. Quality compounder — the only debate is price.</div>
+          </div>
+        </div>
+        <div style="height:18px;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#e7e5df;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:48px;background:#e7e5df;font-family:'Manrope',sans-serif;">
+
+  <div style="max-width:620px;margin-bottom:34px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9a958a;">Stock Rating App · Minimal</div>
+    <div style="font-size:28px;font-weight:800;color:#26241f;margin-top:8px;letter-spacing:-0.02em;">Minimalist rating — three options</div>
+    <div style="font-size:15px;line-height:1.5;color:#6f6a5f;margin-top:10px;text-wrap:pretty;">Stripped-back takes on the core rating screen — whitespace, restrained type, almost no color or chrome. Same MELI data as the richer directions, so you can compare. Your existing screens are untouched.</div>
+  </div>
+
+  <div style="display:flex;gap:40px;align-items:flex-start;">
+
+    <!-- ========================= M1 · EDITORIAL WHITESPACE ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px;">
+        <span style="font-size:13px;font-weight:700;color:#26241f;">M1 · Whitespace</span>
+        <span style="font-size:12px;color:#9a958a;">type &amp; air, no chrome</span>
+      </div>
+      <div style="width:360px;height:840px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.14);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 26px 6px;font-size:13px;font-weight:600;color:#111;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 26px 0;">
+          <span style="font-size:22px;color:#111;font-weight:300;">←</span>
+          <span style="font-size:18px;color:#bbb;font-weight:300;">☆</span>
+        </div>
+
+        <div style="flex:1;padding:30px 26px;display:flex;flex-direction:column;">
+          <div style="font-size:13px;font-weight:600;color:#999;letter-spacing:0.02em;">MELI · MercadoLibre</div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-top:6px;">
+            <div style="font-size:20px;font-weight:600;color:#111;">$1,842.50</div>
+            <div style="font-size:13px;font-weight:500;color:#1b8a5a;">+1.4%</div>
+          </div>
+
+          <div style="margin-top:34px;">
+            <div style="display:flex;align-items:flex-start;gap:6px;">
+              <div style="font-size:80px;font-weight:700;color:#111;line-height:0.82;letter-spacing:-0.04em;">4.3</div>
+              <div style="font-size:18px;font-weight:400;color:#bbb;margin-top:6px;">/5</div>
+            </div>
+            <div style="position:relative;display:inline-flex;color:#e8e8e8;font-size:18px;letter-spacing:5px;margin-top:18px;">★★★★★<span style="position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#111;width:86%;">★★★★★</span></div>
+          </div>
+
+          <div style="font-size:18px;font-weight:400;color:#444;line-height:1.45;margin-top:22px;text-wrap:pretty;">A fast-growing market leader, 22% below its peak. Rare quality at a fairer price.</div>
+
+          <!-- pillars -->
+          <div style="margin-top:26px;display:flex;flex-direction:column;">
+            <div style="padding:15px 0;border-top:1px solid #eee;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:15px;font-weight:500;color:#111;">Growing</span><span style="font-size:15px;font-weight:600;color:#111;">4.8</span></div>
+              <div style="height:2px;background:#eee;margin-top:10px;"><div style="height:100%;width:96%;background:#111;"></div></div>
+            </div>
+            <div style="padding:15px 0;border-top:1px solid #eee;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:15px;font-weight:500;color:#111;">Profitable</span><span style="font-size:15px;font-weight:600;color:#111;">4.0</span></div>
+              <div style="height:2px;background:#eee;margin-top:10px;"><div style="height:100%;width:80%;background:#111;"></div></div>
+            </div>
+            <div style="padding:15px 0;border-top:1px solid #eee;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:15px;font-weight:500;color:#111;">Fairly priced</span><span style="font-size:15px;font-weight:600;color:#111;">3.6</span></div>
+              <div style="height:2px;background:#eee;margin-top:10px;"><div style="height:100%;width:72%;background:#111;"></div></div>
+            </div>
+            <div style="padding:15px 0;border-top:1px solid #eee;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:15px;font-weight:500;color:#111;">Safe</span><span style="font-size:15px;font-weight:600;color:#111;">3.9</span></div>
+              <div style="height:2px;background:#eee;margin-top:10px;"><div style="height:100%;width:78%;background:#111;"></div></div>
+            </div>
+            <div style="padding:15px 0;border-top:1px solid #eee;border-bottom:1px solid #eee;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:15px;font-weight:500;color:#111;">Can keep winning</span><span style="font-size:15px;font-weight:600;color:#111;">4.7</span></div>
+              <div style="height:2px;background:#eee;margin-top:10px;"><div style="height:100%;width:94%;background:#111;"></div></div>
+            </div>
+          </div>
+
+          <div style="flex:1;"></div>
+          <div style="display:flex;gap:0;margin-top:24px;">
+            <div style="flex:1;"><div style="font-size:12px;color:#999;font-weight:500;">YTD</div><div style="font-size:17px;font-weight:600;color:#111;margin-top:3px;">+9.2%</div></div>
+            <div style="width:1px;background:#eee;"></div>
+            <div style="flex:1;padding-left:20px;"><div style="font-size:12px;color:#999;font-weight:500;">From ATH</div><div style="font-size:17px;font-weight:600;color:#111;margin-top:3px;">−22%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= M2 · MONO / DATA ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px;">
+        <span style="font-size:13px;font-weight:700;color:#26241f;">M2 · Mono</span>
+        <span style="font-size:12px;color:#9a958a;">numeric, dotted leaders</span>
+      </div>
+      <div style="width:360px;height:760px;background:#fafafa;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.14);display:flex;flex-direction:column;font-family:'IBM Plex Mono',monospace;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-size:12px;font-weight:500;color:#111;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 24px 0;">
+          <span style="font-size:18px;color:#111;">[</span>
+          <span style="font-size:13px;color:#999;">☆</span>
+        </div>
+
+        <div style="flex:1;padding:26px 24px;display:flex;flex-direction:column;">
+          <div style="font-size:12px;color:#999;letter-spacing:0.08em;">NYSE</div>
+          <div style="font-size:24px;font-weight:600;color:#111;margin-top:4px;">MELI</div>
+          <div style="font-family:'Manrope',sans-serif;font-size:13px;color:#888;margin-top:2px;">MercadoLibre · E-commerce &amp; Fintech</div>
+
+          <!-- score block -->
+          <div style="margin-top:34px;border-top:1px solid #e6e6e6;border-bottom:1px solid #e6e6e6;padding:22px 0;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:11px;color:#999;letter-spacing:0.06em;">RATING</div>
+              <div style="font-size:52px;font-weight:600;color:#111;line-height:0.9;margin-top:6px;">4.3<span style="font-size:20px;color:#bbb;">/5</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:18px;color:#111;letter-spacing:1px;">★★★★<span style="color:#dcdcdc;">★</span></div>
+              <div style="font-size:11px;color:#999;margin-top:8px;">$1,842.50</div>
+              <div style="font-size:12px;color:#1b8a5a;margin-top:2px;">+1.40%</div>
+            </div>
+          </div>
+
+          <div style="font-family:'Manrope',sans-serif;font-size:14px;color:#555;line-height:1.5;margin-top:20px;">Elite growth, 22% off highs. Quality at a fairer price — the only debate is valuation.</div>
+
+          <!-- dotted leader rows -->
+          <div style="margin-top:28px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:baseline;"><span style="font-size:13px;color:#111;">growing</span><span style="flex:1;border-bottom:1px dotted #cfcfcf;margin:0 8px 4px;"></span><span style="font-size:14px;font-weight:600;color:#111;">4.8</span></div>
+            <div style="display:flex;align-items:baseline;"><span style="font-size:13px;color:#111;">profitable</span><span style="flex:1;border-bottom:1px dotted #cfcfcf;margin:0 8px 4px;"></span><span style="font-size:14px;font-weight:600;color:#111;">4.0</span></div>
+            <div style="display:flex;align-items:baseline;"><span style="font-size:13px;color:#111;">fairly_priced</span><span style="flex:1;border-bottom:1px dotted #cfcfcf;margin:0 8px 4px;"></span><span style="font-size:14px;font-weight:600;color:#b5621b;">3.6</span></div>
+            <div style="display:flex;align-items:baseline;"><span style="font-size:13px;color:#111;">safe</span><span style="flex:1;border-bottom:1px dotted #cfcfcf;margin:0 8px 4px;"></span><span style="font-size:14px;font-weight:600;color:#111;">3.9</span></div>
+            <div style="display:flex;align-items:baseline;"><span style="font-size:13px;color:#111;">keeps_winning</span><span style="flex:1;border-bottom:1px dotted #cfcfcf;margin:0 8px 4px;"></span><span style="font-size:14px;font-weight:600;color:#111;">4.7</span></div>
+          </div>
+
+          <div style="flex:1;"></div>
+          <div style="border-top:1px solid #e6e6e6;padding-top:16px;display:flex;justify-content:space-between;">
+            <span style="font-size:12px;color:#999;">YTD <span style="color:#1b8a5a;font-weight:600;">+9.2%</span></span>
+            <span style="font-size:12px;color:#999;">ATH <span style="color:#111;font-weight:600;">−22%</span></span>
+            <span style="font-size:12px;color:#999;">PEG <span style="color:#111;font-weight:600;">0.9</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================= M3 · ONE ACCENT / DOTS ========================= -->
+    <div style="flex:none;width:360px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px;">
+        <span style="font-size:13px;font-weight:700;color:#26241f;">M3 · One accent</span>
+        <span style="font-size:12px;color:#9a958a;">calm grayscale, dot scale</span>
+      </div>
+      <div style="width:360px;height:760px;background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(30,26,18,0.14);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 26px 6px;font-size:13px;font-weight:600;color:#1a1a1a;">
+          <span>9:41</span><span style="font-size:11px;letter-spacing:1px;">●●● ▮</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 26px 0;">
+          <span style="font-size:21px;color:#1a1a1a;font-weight:300;">←</span>
+          <span style="font-size:13px;color:#1a1a1a;font-weight:600;letter-spacing:0.05em;">MELI</span>
+          <span style="font-size:18px;color:#cfcfcf;">☆</span>
+        </div>
+
+        <div style="flex:1;padding:34px 26px;display:flex;flex-direction:column;">
+          <!-- centered hero -->
+          <div style="text-align:center;">
+            <div style="font-size:13px;font-weight:600;color:#9a9a9a;letter-spacing:0.04em;">MercadoLibre</div>
+            <div style="font-size:72px;font-weight:800;color:#1b8a5a;line-height:1;letter-spacing:-0.03em;margin-top:14px;">4.3</div>
+            <div style="display:inline-flex;gap:7px;margin-top:18px;">
+              <span style="width:9px;height:9px;border-radius:50%;background:#1b8a5a;"></span>
+              <span style="width:9px;height:9px;border-radius:50%;background:#1b8a5a;"></span>
+              <span style="width:9px;height:9px;border-radius:50%;background:#1b8a5a;"></span>
+              <span style="width:9px;height:9px;border-radius:50%;background:#1b8a5a;"></span>
+              <span style="width:9px;height:9px;border-radius:50%;background:#e2e2e2;"></span>
+            </div>
+            <div style="font-size:14px;color:#777;line-height:1.5;margin-top:22px;max-width:260px;margin-left:auto;margin-right:auto;text-wrap:pretty;">Quality compounder trading 22% below its high.</div>
+          </div>
+
+          <!-- pillars as dot scales -->
+          <div style="margin-top:42px;display:flex;flex-direction:column;gap:22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:14.5px;font-weight:500;color:#1a1a1a;">Growing</span>
+              <div style="display:flex;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:14.5px;font-weight:500;color:#1a1a1a;">Profitable</span>
+              <div style="display:flex;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#e2e2e2;"></span></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:14.5px;font-weight:500;color:#1a1a1a;">Fairly priced</span>
+              <div style="display:flex;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#e2e2e2;"></span><span style="width:8px;height:8px;border-radius:50%;background:#e2e2e2;"></span></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:14.5px;font-weight:500;color:#1a1a1a;">Safe</span>
+              <div style="display:flex;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#e2e2e2;"></span></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:14.5px;font-weight:500;color:#1a1a1a;">Can keep winning</span>
+              <div style="display:flex;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#1a1a1a;"></span><span style="width:8px;height:8px;border-radius:50%;background:#e2e2e2;"></span></div>
+            </div>
+          </div>
+
+          <div style="flex:1;"></div>
+          <div style="display:flex;justify-content:center;gap:32px;text-align:center;">
+            <div><div style="font-size:12px;color:#9a9a9a;">YTD</div><div style="font-size:16px;font-weight:600;color:#1a1a1a;margin-top:2px;">+9.2%</div></div>
+            <div><div style="font-size:12px;color:#9a9a9a;">From ATH</div><div style="font-size:16px;font-weight:600;color:#1a1a1a;margin-top:2px;">−22%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

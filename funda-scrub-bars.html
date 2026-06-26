@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funda — Scrubbable Bar Charts (reference implementation)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#f6f7f9;font-family:'Manrope',sans-serif;color:#0f172a;}
+  canvas{display:block;}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px 60px;}
+  .card{background:#fff;border:1px solid #e7ebf0;border-radius:18px;padding:24px 28px 26px;}
+  .seg{display:flex;gap:3px;background:#f1f5f9;border-radius:10px;padding:3px;}
+  .seg > span{cursor:pointer;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:7px;color:#64748b;}
+  .metric-card{cursor:pointer;border:1px solid #eef2f7;background:#fafbfc;border-radius:13px;padding:13px 14px;transition:all .12s;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <!-- header + toggles -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:17px;font-weight:800;letter-spacing:-0.01em;">Fundamentals over time</div>
+        <div style="font-size:12.5px;color:#94a3b8;margin-top:3px;">Drag across the bars to read any period — every bar stays visible.</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="seg" id="granSeg">
+          <span data-gran="quarterly">Quarterly</span>
+          <span data-gran="annual">Annual</span>
+        </div>
+        <div class="seg" id="rangeSeg">
+          <span data-range="2Y">2Y</span>
+          <span data-range="5Y">5Y</span>
+          <span data-range="Max">Max</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- live readout (updates as you scrub) -->
+    <div style="margin-top:20px;">
+      <div id="roMetric" style="font-size:13px;font-weight:700;color:#64748b;">Revenue</div>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-top:5px;flex-wrap:wrap;">
+        <div id="roValue" style="font-size:40px;font-weight:800;letter-spacing:-0.02em;line-height:1;">$10.7B</div>
+        <span id="roChip" style="font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;background:#ecfdf5;color:#059669;">+58% YoY</span>
+        <span id="roLabel" style="font-size:12.5px;font-weight:600;color:#94a3b8;">latest</span>
+      </div>
+    </div>
+
+    <div style="height:300px;margin-top:16px;position:relative;"><canvas id="heroChart"></canvas></div>
+    <div id="scrubHint" style="font-size:11.5px;color:#b6c0cd;font-weight:600;margin-top:10px;text-align:center;">Drag across the bars to read any quarter →</div>
+
+    <div style="height:1px;background:#eef2f7;margin:22px 0 18px;"></div>
+
+    <!-- metric rail (tap to switch) -->
+    <div style="font-size:12.5px;font-weight:800;color:#64748b;letter-spacing:0.02em;">ALL METRICS · tap to view</div>
+    <div id="rail" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px;margin-top:13px;"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// DATA  — replace these arrays with your real API data (same shape).
+// ============================================================================
+const QL = [];
+[22,23,24,25].forEach(y => [1,2,3,4].forEach(q => QL.push('Q'+q+' \u2019'+y)));
+QL.push('Q1 \u201926');                       // 17 quarters: Q1'22 → Q1'26
+const YL = ['2022','2023','2024','2025','2026'];
+const GROUPS = [[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15],[16]]; // quarter→year buckets
+
+const RAW = {
+  revenue: { label:'Revenue',        kind:'money', color:'#059669', data:[5.4,5.2,5.6,6.0,7.3,5.9,6.1,6.2,5.4,5.6,5.9,6.3,5.8,6.1,6.4,6.7,10.7] },
+  ni:      { label:'Net Income',     kind:'money', color:'#6366f1', data:[0.10,0.04,0.06,0.05,0.72,0.71,0.42,0.45,0.85,0.92,1.15,0.78,0.88,0.95,0.99,0.62,1.55] },
+  eps:     { label:'EPS',            kind:'eps',   color:'#0ea5e9', data:[0.3,0.1,0.2,0.15,2.2,2.1,1.3,1.4,2.6,2.8,3.5,2.4,2.7,2.9,3.0,1.9,4.9] },
+  margin:  { label:'Net Margin',     kind:'pct',   color:'#10b981', data:[2,-1,-2,0,4,9,13,8,2,11,14,13,18,16,12,14,14.5] },
+  fcf:     { label:'Free Cash Flow', kind:'money', color:'#0d9488', data:[0.2,-0.3,0.1,0.4,0.9,0.5,0.6,0.7,0.3,0.8,1.0,0.6,0.7,0.9,1.1,0.5,1.8] },
+  cr:      { label:'Current Ratio',  kind:'ratio', color:'#0284c7', data:[1.4,1.2,1.2,1.4,1.5,1.9,1.4,1.5,1.6,1.5,1.5,1.55,1.5,1.5,1.45,1.42,1.42] },
+  de:      { label:'Debt / Equity',  kind:'ratio', color:'#f43f5e', lowerBetter:true, data:[0.0,0.0,0.02,0.35,0.38,0.40,0.55,0.65,0.66,0.6,0.58,0.6,0.6,0.58,0.55,0.4,0.2] }
+};
+const ORDER = ['revenue','ni','eps','margin','fcf','cr','de'];
+
+// ============================================================================
+// STATE
+// ============================================================================
+const state = { key:'revenue', gran:'quarterly', range:'5Y' };
+let hero = null;
+const sparks = {};
+let cur = { labels:[], data:[] };   // the series currently shown in the hero
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+const $ = (sel) => document.querySelector(sel);
+const alpha = (hex,a) => { const h=hex.replace('#',''); return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`; };
+
+function fmt(kind,v){
+  if(kind==='money') return '$'+v.toFixed(1)+'B';
+  if(kind==='eps')   return '$'+v.toFixed(2);
+  if(kind==='pct')   return v.toFixed(1)+'%';
+  return v.toFixed(2);
+}
+function fmtShort(kind,v){
+  if(kind==='money') return '$'+(Math.round(v*10)/10)+'B';
+  if(kind==='eps')   return '$'+(Math.round(v*10)/10);
+  if(kind==='pct')   return v+'%';
+  return v;
+}
+// year-over-year change at index i (4 quarters back, or 1 year back when annual)
+function chgAt(key,data,i,gran){
+  const k=RAW[key], step = gran==='annual'?1:4;
+  if(i-step < 0) return null;
+  const curV=data[i], prev=data[i-step];
+  if(k.kind==='money'||k.kind==='eps'){
+    if(prev===0) return null;
+    const pct=(curV-prev)/Math.abs(prev)*100;
+    return { text:(pct>=0?'+':'\u2212')+Math.abs(pct).toFixed(0)+'%', pos:pct>=0 };
+  }
+  const d=curV-prev, pos = k.lowerBetter ? d<=0 : d>=0, unit = k.kind==='pct'?'pt':'';
+  return { text:(d>=0?'+':'\u2212')+Math.abs(d).toFixed(k.kind==='pct'?1:2)+unit, pos };
+}
+function chipCss(pos,small){
+  const base = 'font-weight:800;border-radius:8px;'+(small?'font-size:11px;padding:2px 7px;':'font-size:12px;padding:4px 9px;');
+  if(pos==null) return base+'background:#f1f5f9;color:#94a3b8;';
+  return pos ? base+'background:#ecfdf5;color:#059669;' : base+'background:#fef2f2;color:#dc2626;';
+}
+function annual(key){
+  const k=RAW[key];
+  return GROUPS.map(idxs=>{
+    const vals=idxs.map(i=>k.data[i]);
+    return (k.kind==='money'||k.kind==='eps') ? vals.reduce((a,b)=>a+b,0) : vals.reduce((a,b)=>a+b,0)/vals.length;
+  });
+}
+function series(key,gran,range){
+  let labels,data;
+  if(gran==='annual'){ labels=YL.slice(); data=annual(key); }
+  else { labels=QL.slice(); data=RAW[key].data.slice(); }
+  const n=data.length;
+  let keep = gran==='annual' ? (range==='2Y'?2:range==='5Y'?5:n) : (range==='2Y'?8:n);
+  keep=Math.min(keep,n);
+  return { labels:labels.slice(n-keep), data:data.slice(n-keep) };
+}
+
+// ============================================================================
+// THE SCRUB MECHANISM  ← this is the part that fixes "it hides the other bars"
+//   1. tooltip is DISABLED (no floating box covering the bars)
+//   2. a crosshair plugin draws a thin line + dot at the active bar
+//   3. the active bar darkens to full color; every other bar is untouched
+//   4. the big header readout updates live with the scrubbed value
+// ============================================================================
+const crosshair = {
+  id:'crosshair',
+  afterDatasetsDraw(chart){
+    const idx = chart.$scrub;
+    if(idx==null) return;
+    const pt = chart.getDatasetMeta(0).data[idx];
+    if(!pt) return;
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.strokeStyle='rgba(15,23,42,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pt.x,chart.chartArea.top); ctx.lineTo(pt.x,chart.chartArea.bottom); ctx.stroke();
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = chart.$color||'#0f172a'; ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(pt.x,pt.y,5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+};
+
+let scrubAttached = false;
+function attachScrubOnce(){
+  if(scrubAttached) return;
+  const cv = $('#heroChart');
+  scrubAttached = true;
+  cv.style.touchAction = 'none';
+  const move = (e) => {
+    if(!hero) return;
+    const rect = cv.getBoundingClientRect();
+    const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+    const x = clientX - rect.left;
+    const pts = hero.getDatasetMeta(0).data;
+    let best=0, bd=Infinity;
+    for(let i=0;i<pts.length;i++){ const dx=Math.abs(pts[i].x-x); if(dx<bd){bd=dx;best=i;} }
+    hero.$scrub = best;
+    updateReadout(best);
+    $('#scrubHint').style.opacity='0';
+    hero.update('none');           // re-resolves the per-bar color, no animation
+  };
+  const end = () => {
+    if(!hero) return;
+    hero.$scrub = null;
+    updateReadout(null);
+    $('#scrubHint').style.opacity='1';
+    hero.update('none');
+  };
+  cv.addEventListener('pointerdown', move);
+  cv.addEventListener('pointermove', move);
+  cv.addEventListener('pointerleave', end);
+  cv.addEventListener('pointerup', end);
+}
+
+function updateReadout(i){
+  const k = RAW[state.key];
+  const idx = (i==null) ? cur.data.length-1 : i;
+  $('#roMetric').textContent = k.label;
+  $('#roValue').textContent  = fmt(k.kind, cur.data[idx]);
+  const ch = chgAt(state.key, cur.data, idx, state.gran);
+  const chip = $('#roChip');
+  if(ch){ chip.textContent = ch.text + (k.kind==='money'||k.kind==='eps' ? ' YoY' : ' vs yr'); chip.style.cssText = chipCss(ch.pos); }
+  else  { chip.textContent = 'n/a'; chip.style.cssText = chipCss(null); }
+  $('#roLabel').textContent = cur.labels[idx] + (i==null ? ' \u00b7 latest' : '');
+}
+
+// ============================================================================
+// HERO BAR CHART
+// ============================================================================
+function buildHero(){
+  const k = RAW[state.key];
+  const s = series(state.key, state.gran, state.range);
+  cur = s;
+  const cv = $('#heroChart');
+  if(hero) hero.destroy();
+  const g = cv.getContext('2d').createLinearGradient(0,0,0,300);
+  g.addColorStop(0, alpha(k.color,0.92));
+  g.addColorStop(1, alpha(k.color,0.42));
+  hero = new Chart(cv,{
+    type:'bar',
+    data:{ labels:s.labels, datasets:[{
+      data:s.data,
+      // active bar = full color, all others keep the gradient (never dimmed/hidden)
+      backgroundColor:(ctx)=> (ctx.chart.$scrub!=null && ctx.dataIndex===ctx.chart.$scrub) ? k.color : g,
+      borderRadius:5, maxBarThickness:30, borderSkipped:false
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:600, easing:'easeOutCubic' },
+      plugins:{ legend:{display:false}, tooltip:{enabled:false} },  // ← tooltip OFF
+      scales:{
+        x:{ grid:{display:false}, border:{display:false},
+            ticks:{ color:'#b6c0cd', font:{size:11,weight:'600'}, maxRotation:0, autoSkip:true, maxTicksLimit:6, padding:8 } },
+        y:{ grid:{color:'#f1f5f9',drawTicks:false}, border:{display:false}, beginAtZero:true,
+            ticks:{ color:'#cbd5e1', font:{size:11,weight:'600'}, maxTicksLimit:4, padding:8, callback:(v)=>fmtShort(k.kind,v) } }
+      }
+    },
+    plugins:[crosshair]
+  });
+  hero.$color = k.color;
+  attachScrubOnce();
+  updateReadout(null);
+  styleCards();
+}
+
+// ============================================================================
+// METRIC RAIL (mini bar sparklines, tap to switch)
+// ============================================================================
+function buildRail(){
+  const rail = $('#rail');
+  if(!rail.dataset.built){
+    rail.innerHTML = ORDER.map(key=>`
+      <div class="metric-card" data-metric="${key}" id="card-${key}">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;font-weight:700;color:#475569;">${RAW[key].label}</span>
+          <span id="chip-${key}"></span>
+        </div>
+        <div id="val-${key}" style="font-size:18px;font-weight:800;margin-top:5px;"></div>
+        <div style="height:36px;margin-top:6px;"><canvas id="spark-${key}"></canvas></div>
+      </div>`).join('');
+    rail.dataset.built = '1';
+    rail.querySelectorAll('[data-metric]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.key = el.dataset.metric; buildHero(); });
+    });
+  }
+  ORDER.forEach(key=>{
+    const k = RAW[key], s = series(key, state.gran, state.range), last = s.data.length-1;
+    $('#val-'+key).textContent = fmt(k.kind, s.data[last]);
+    const ch = chgAt(key, s.data, last, state.gran), chip = $('#chip-'+key);
+    if(ch){ chip.textContent = ch.text; chip.style.cssText = chipCss(ch.pos, true); }
+    else  { chip.textContent = 'n/a'; chip.style.cssText = chipCss(null, true); }
+    const cv = $('#spark-'+key);
+    if(sparks[key]) sparks[key].destroy();
+    sparks[key] = new Chart(cv,{
+      type:'bar',
+      data:{ labels:s.labels, datasets:[{ data:s.data, backgroundColor:alpha(k.color,0.82), borderRadius:2, maxBarThickness:7, borderSkipped:false }] },
+      options:{ responsive:true, maintainAspectRatio:false, animation:false,
+        plugins:{legend:{display:false},tooltip:{enabled:false}},
+        scales:{x:{display:false},y:{display:false,beginAtZero:true}} }
+    });
+  });
+}
+
+// ============================================================================
+// ACTIVE-STATE STYLING + TOGGLE WIRING
+// ============================================================================
+function styleCards(){
+  ORDER.forEach(key=>{
+    const card = $('#card-'+key); if(!card) return;
+    const active = key===state.key;
+    card.style.borderColor = active ? RAW[key].color : '#eef2f7';
+    card.style.background  = active ? '#fff' : '#fafbfc';
+    card.style.boxShadow   = active ? '0 4px 14px rgba(15,23,42,0.08)' : 'none';
+  });
+}
+function styleSeg(){
+  document.querySelectorAll('[data-gran]').forEach(el=>{
+    const a = el.dataset.gran===state.gran;
+    el.style.background=a?'#fff':'transparent'; el.style.color=a?'#0f172a':'#64748b'; el.style.boxShadow=a?'0 1px 2px rgba(15,23,42,0.08)':'none';
+  });
+  document.querySelectorAll('[data-range]').forEach(el=>{
+    const a = el.dataset.range===state.range;
+    el.style.background=a?'#fff':'transparent'; el.style.color=a?'#0f172a':'#64748b'; el.style.boxShadow=a?'0 1px 2px rgba(15,23,42,0.08)':'none';
+  });
+}
+function rebuildAll(){ buildRail(); buildHero(); styleSeg(); }
+
+document.querySelectorAll('[data-gran]').forEach(el=> el.addEventListener('click', ()=>{ state.gran=el.dataset.gran; rebuildAll(); }));
+document.querySelectorAll('[data-range]').forEach(el=> el.addEventListener('click', ()=>{ state.range=el.dataset.range; rebuildAll(); }));
+
+// boot
+rebuildAll();
+</script>
+</body>
+</html>

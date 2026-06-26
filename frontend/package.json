@@ -1,0 +1,32 @@
+{
+  "name": "funda-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src --ext .tsx,.ts",
+    "preview": "vite preview",
+    "start": "vite"
+  },
+  "dependencies": {
+    "@react-oauth/google": "^0.13.5",
+    "axios": "^1.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.10.0",
+    "recharts": "^3.9.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "@vitejs/plugin-react": "^3.1.0",
+    "eslint": "^8.36.0",
+    "eslint-plugin-react": "^7.32.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.2.0"
+  }
+}
