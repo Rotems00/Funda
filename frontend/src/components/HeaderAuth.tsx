@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const HeaderAuth: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  // Fall back to the initials avatar if the Google image fails to load
+  const [imgFailed, setImgFailed] = useState(false);
+  useEffect(() => { setImgFailed(false); }, [user?.picture]);
 
   if (!user) {
     return (
@@ -27,8 +30,14 @@ export const HeaderAuth: React.FC = () => {
       <button className="header-watchlist-link" onClick={() => navigate('/watchlist')}>
         Watchlist
       </button>
-      {user.picture ? (
-        <img src={user.picture} alt={user.name || user.email} className="header-avatar" />
+      {user.picture && !imgFailed ? (
+        <img
+          src={user.picture}
+          alt={user.name || user.email}
+          className="header-avatar"
+          referrerPolicy="no-referrer"
+          onError={() => setImgFailed(true)}
+        />
       ) : (
         <div className="header-avatar header-avatar-fallback">{(user.name || user.email).charAt(0).toUpperCase()}</div>
       )}

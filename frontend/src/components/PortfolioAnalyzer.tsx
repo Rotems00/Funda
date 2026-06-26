@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { usePortfolio, RiskProfile } from '../hooks/usePortfolio';
+import { usePortfolio, RiskProfile, PORTFOLIO_LIMIT } from '../hooks/usePortfolio';
 import { usePortfolioData, PortfolioPosition } from '../hooks/usePortfolioData';
 import { TickerAutocomplete } from './TickerAutocomplete';
 import { CompanyLogo } from './CompanyLogo';
@@ -9,6 +9,35 @@ import { HeaderAuth } from './HeaderAuth';
 
 const COLORS = ['#10b981', '#6366f1', '#0ea5e9', '#f59e0b', '#f43f5e', '#14b8a6', '#a855f7', '#84cc16', '#fb7185', '#38bdf8'];
 const PROFILES: RiskProfile[] = ['Conservative', 'Balanced', 'Aggressive'];
+
+// Preference options for the "Suggest additions" panel
+const CAP_OPTIONS = ['Any', 'Large', 'Mid', 'Small'] as const;
+const GROWTH_OPTIONS = ['Low', 'Medium', 'High'] as const;
+const DIVIDEND_OPTIONS = ['No', 'Nice-to-have', 'Important'] as const;
+const ASSET_OPTIONS = [
+  { key: 'Stocks', label: 'Stocks only' },
+  { key: 'Any', label: 'Incl. ETFs' }
+] as const;
+const SECTOR_OPTIONS = ['Technology', 'Healthcare', 'Financials', 'Consumer', 'Industrials', 'Energy', 'Communication', 'Utilities'];
+
+interface Suggestion {
+  ticker: string;
+  name: string;
+  sector: string;
+  marketCap: number | null;
+  price: number;
+  rating: number;
+  pillars: { growing: number; profitable: number; fairlyPriced: number; safe: number; canKeepWinning: number };
+  reason: string;
+}
+
+const marketCapLabel = (v: number | null) => {
+  if (!v || v <= 0) return null;
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(1)}T`;
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(0)}M`;
+  return `$${v.toLocaleString()}`;
+};
 
 const usd = (v: number) =>
   v >= 1000 ? `$${v.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : `$${v.toFixed(2)}`;
@@ -18,8 +47,15 @@ interface Note { tone: 'good' | 'warn' | 'info'; text: string; }
 function analyze(positions: PortfolioPosition[], profile: RiskProfile) {
   const total = positions.reduce((s, p) => s + p.value, 0);
   const w = (p: PortfolioPosition) => (total ? p.value / total : 0);
-  const wRating = positions.reduce((s, p) => s + w(p) * p.rating, 0);
-  const wSafe = positions.reduce((s, p) => s + w(p) * p.safe, 0);
+
+  // Quality averages cover RATED holdings only — ETFs have no Funda rating, so
+  // they're re-weighted out instead of dragging the average toward zero.
+  const ratedPositions = positions.filter(p => p.rated);
+  const ratedTotal = ratedPositions.reduce((s, p) => s + p.value, 0);
+  const hasRated = ratedPositions.length > 0;
+  const wr = (p: PortfolioPosition) => (ratedTotal ? p.value / ratedTotal : 0);
+  const wRating = ratedPositions.reduce((s, p) => s + wr(p) * p.rating, 0);
+  const wSafe = ratedPositions.reduce((s, p) => s + wr(p) * p.safe, 0);
 
   const sorted = [...positions].sort((a, b) => b.value - a.value);
   const top = sorted[0];
@@ -41,7 +77,8 @@ function analyze(positions: PortfolioPosition[], profile: RiskProfile) {
   };
   const [lo, hi] = bands[profile];
   let fit: { tone: Note['tone']; title: string; text: string };
-  if (fitGauge > hi) fit = { tone: 'warn', title: 'Leans more aggressive than your profile', text: `This leans more aggressive than a ${profile} approach — it's concentrated and/or tilts toward weaker-rated, less financially sturdy names. Consider trimming the most speculative or oversized positions.` };
+  if (!hasRated) fit = { tone: 'info', title: 'Mostly funds / ETFs', text: `Funda rates individual companies, so there's no quality score to judge a portfolio made of ETFs/funds. Add some individual stocks to see a fit assessment.` };
+  else if (fitGauge > hi) fit = { tone: 'warn', title: 'Leans more aggressive than your profile', text: `This leans more aggressive than a ${profile} approach — it's concentrated and/or tilts toward weaker-rated, less financially sturdy names. Consider trimming the most speculative or oversized positions.` };
   else if (fitGauge < lo) fit = { tone: 'info', title: 'More conservative than your profile', text: `This looks more defensive than a ${profile} approach — mostly higher-rated, financially sturdy names. You likely have room to add more growth if you want it.` };
   else fit = { tone: 'good', title: 'Fits your profile', text: `This lines up well with a ${profile} approach — quality and concentration look reasonable for how you invest.` };
 
@@ -49,12 +86,13 @@ function analyze(positions: PortfolioPosition[], profile: RiskProfile) {
   if (top && topW > 0.35) notes.push({ tone: 'warn', text: `${top.ticker} is ${(topW * 100).toFixed(0)}% of the portfolio — heavily concentrated in one name.` });
   if (positions.length > 0 && positions.length < 4) notes.push({ tone: 'warn', text: `Only ${positions.length} holding${positions.length === 1 ? '' : 's'} — more names would cut single-stock risk.` });
   if (topSector && topSector[1] > 0.5) notes.push({ tone: 'warn', text: `${(topSector[1] * 100).toFixed(0)}% sits in ${topSector[0]} — sector-concentrated.` });
-  if (wRating >= 3.7) notes.push({ tone: 'good', text: `Strong average quality — ${wRating.toFixed(1)}/5 weighted Funda rating.` });
-  else if (wRating < 2.5) notes.push({ tone: 'warn', text: `Low average quality — ${wRating.toFixed(1)}/5 weighted rating, tilted toward weak fundamentals.` });
-  if (wSafe >= 3.7) notes.push({ tone: 'good', text: `Financially sturdy — balance-sheet safety ${wSafe.toFixed(1)}/5.` });
-  else if (wSafe < 2.5) notes.push({ tone: 'warn', text: `Elevated balance-sheet risk — safety ${wSafe.toFixed(1)}/5 across holdings.` });
+  // Quality/resilience notes only make sense over rated (non-ETF) holdings
+  if (hasRated && wRating >= 3.7) notes.push({ tone: 'good', text: `Strong average quality — ${wRating.toFixed(1)}/5 weighted Funda rating.` });
+  else if (hasRated && wRating < 2.5) notes.push({ tone: 'warn', text: `Low average quality — ${wRating.toFixed(1)}/5 weighted rating, tilted toward weak fundamentals.` });
+  if (hasRated && wSafe >= 3.7) notes.push({ tone: 'good', text: `Financially sturdy — balance-sheet resilience ${wSafe.toFixed(1)}/5.` });
+  else if (hasRated && wSafe < 2.5) notes.push({ tone: 'warn', text: `Elevated balance-sheet risk — resilience ${wSafe.toFixed(1)}/5 across holdings.` });
 
-  return { total, wRating, wSafe, topW, top, fit, notes };
+  return { total, wRating, wSafe, topW, top, fit, notes, hasRated };
 }
 
 export const PortfolioAnalyzer: React.FC = () => {
@@ -64,6 +102,7 @@ export const PortfolioAnalyzer: React.FC = () => {
 
   const a = analyze(positions, profile);
   const pieData = [...positions].sort((x, y) => y.value - x.value).map(p => ({ name: p.ticker, value: p.value }));
+  const portfolioFull = holdings.length >= PORTFOLIO_LIMIT;
 
   // Gain/loss across positions that have a buy price set
   const costByTicker: Record<string, number | undefined> = {};
@@ -106,7 +145,7 @@ export const PortfolioAnalyzer: React.FC = () => {
     setReviewError(null);
     setReview(null);
     try {
-      const holdingsPayload = positions.map(p => {
+      const holdingsPayload = positions.filter(p => p.rated).map(p => {
         const c = costByTicker[p.ticker];
         return {
           ticker: p.ticker,
@@ -158,6 +197,62 @@ export const PortfolioAnalyzer: React.FC = () => {
     }
   };
 
+  // "Suggest additions" — local LLM proposes new tickers, grounded in real Funda
+  // ratings server-side. Preferences are the "questions" it uses to know the user.
+  const [capPref, setCapPref] = useState<typeof CAP_OPTIONS[number]>('Any');
+  const [growthPref, setGrowthPref] = useState<typeof GROWTH_OPTIONS[number]>('Medium');
+  const [dividendPref, setDividendPref] = useState<typeof DIVIDEND_OPTIONS[number]>('Nice-to-have');
+  const [assetPref, setAssetPref] = useState<typeof ASSET_OPTIONS[number]['key']>('Stocks');
+  const [sectorPrefs, setSectorPrefs] = useState<string[]>([]);
+  const [suggestCount, setSuggestCount] = useState(5);
+  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
+  const [suggestNote, setSuggestNote] = useState<string | null>(null);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+
+  const toggleSector = (s: string) =>
+    setSectorPrefs(prev => (prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]));
+
+  const heldTickers = new Set(holdings.map(h => h.ticker));
+
+  const requestSuggestions = async () => {
+    if (suggestLoading) return;
+    setSuggestLoading(true);
+    setSuggestError(null);
+    setSuggestNote(null);
+    setSuggestions(null);
+    try {
+      const resp = await fetch('/api/portfolio/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          holdings: positions.map(p => ({ ticker: p.ticker, sector: p.sector, rating: p.rating })),
+          preferences: {
+            risk: profile,
+            marketCap: capPref,
+            sectors: sectorPrefs,
+            growth: growthPref,
+            dividend: dividendPref,
+            assetType: assetPref,
+            count: suggestCount
+          }
+        })
+      });
+      const j = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setSuggestError(j.error || 'Could not get suggestions.');
+        return;
+      }
+      setSuggestions(j.suggestions || []);
+      if ((j.suggestions || []).length === 0) setSuggestError(j.note || 'No matches — try easing a filter.');
+      else if (j.note) setSuggestNote(j.note);
+    } catch {
+      setSuggestError('Could not reach the suggestion service.');
+    } finally {
+      setSuggestLoading(false);
+    }
+  };
+
   return (
     <div className="wl-page">
       <div className="wl-shell">
@@ -183,7 +278,9 @@ export const PortfolioAnalyzer: React.FC = () => {
               {totalGain !== null && (
                 <div className="wl-stat"><div className="wl-stat-label">Total P&L</div><div className="wl-stat-val" style={{ color: gainColor }}>{totalGain >= 0 ? '+' : '−'}{usd(Math.abs(totalGain))}{totalGainPct !== null && <span style={{ fontSize: 13, marginLeft: 5 }}>({totalGainPct >= 0 ? '+' : ''}{totalGainPct.toFixed(1)}%)</span>}</div></div>
               )}
-              <div className="wl-stat"><div className="wl-stat-label">Avg rating</div><div className="wl-stat-row"><span className="wl-stat-val">{a.wRating.toFixed(1)}</span><span className="wl-stat-star">★</span></div></div>
+              {a.hasRated && (
+                <div className="wl-stat"><div className="wl-stat-label">Avg rating</div><div className="wl-stat-row"><span className="wl-stat-val">{a.wRating.toFixed(1)}</span><span className="wl-stat-star">★</span></div></div>
+              )}
             </div>
           )}
         </div>
@@ -198,8 +295,12 @@ export const PortfolioAnalyzer: React.FC = () => {
 
         {/* ADD */}
         <div className="pa-add">
-          <TickerAutocomplete onSelectTicker={(t) => addHolding(t, 1)} />
-          <span className="pa-add-hint">Pick a ticker to add it, then set your share count below.</span>
+          {!portfolioFull && <TickerAutocomplete onSelectTicker={(t) => addHolding(t, 1)} />}
+          <span className="pa-add-hint">
+            {portfolioFull
+              ? `Portfolio is full (max ${PORTFOLIO_LIMIT}). Remove a holding to add another.`
+              : `Pick a ticker to add it — stocks or ETFs — then set your share count below. (${holdings.length}/${PORTFOLIO_LIMIT})`}
+          </span>
         </div>
 
         {holdings.length === 0 && (
@@ -227,7 +328,7 @@ export const PortfolioAnalyzer: React.FC = () => {
                     <div className="pa-row-id" onClick={() => navigate(`/${p.ticker}`)}>
                       <CompanyLogo ticker={p.ticker} className="pa-logo" fallbackColor={COLORS[i % COLORS.length]} />
                       <div>
-                        <div className="pa-row-ticker">{p.ticker} <span className="pa-row-rating">{p.rating.toFixed(1)}★</span></div>
+                        <div className="pa-row-ticker">{p.ticker} {p.rated ? <span className="pa-row-rating">{p.rating.toFixed(1)}★</span> : <span className="pa-etf-tag">ETF</span>}</div>
                         <div className="pa-row-name">{p.name}</div>
                       </div>
                     </div>
@@ -235,8 +336,9 @@ export const PortfolioAnalyzer: React.FC = () => {
                       className="pa-shares"
                       type="number"
                       min={0}
-                      value={p.shares}
-                      onChange={(e) => setShares(p.ticker, parseFloat(e.target.value) || 0)}
+                      placeholder="0"
+                      value={p.shares === 0 ? '' : p.shares}
+                      onChange={(e) => setShares(p.ticker, e.target.value === '' ? 0 : (parseFloat(e.target.value) || 0))}
                     />
                     <input
                       className="pa-shares"
@@ -314,6 +416,122 @@ export const PortfolioAnalyzer: React.FC = () => {
             {review && <div className="pa-ai-body">{review}</div>}
           </div>
         )}
+
+        {/* SUGGEST ADDITIONS */}
+        <div className="pa-ai pa-suggest">
+          <div className="pa-ai-head">
+            <div>
+              <h3>✨ Suggest additions</h3>
+              <p className="momentum-subtitle">Answer a few questions and a local model proposes new companies that complement your portfolio — each idea is scored with a real Funda rating.</p>
+            </div>
+          </div>
+
+          <div className="pa-pref-grid">
+            <div className="pa-pref">
+              <span className="pa-pref-label">Risk appetite</span>
+              <div className="pa-chips">
+                {PROFILES.map(p => (
+                  <span key={p} className={`pa-chip ${profile === p ? 'active' : ''}`} onClick={() => setProfile(p)}>{p}</span>
+                ))}
+              </div>
+            </div>
+            <div className="pa-pref">
+              <span className="pa-pref-label">Company size</span>
+              <div className="pa-chips">
+                {CAP_OPTIONS.map(c => (
+                  <span key={c} className={`pa-chip ${capPref === c ? 'active' : ''}`} onClick={() => setCapPref(c)}>{c}</span>
+                ))}
+              </div>
+            </div>
+            <div className="pa-pref">
+              <span className="pa-pref-label">Growth matters</span>
+              <div className="pa-chips">
+                {GROWTH_OPTIONS.map(g => (
+                  <span key={g} className={`pa-chip ${growthPref === g ? 'active' : ''}`} onClick={() => setGrowthPref(g)}>{g}</span>
+                ))}
+              </div>
+            </div>
+            <div className="pa-pref">
+              <span className="pa-pref-label">Dividends</span>
+              <div className="pa-chips">
+                {DIVIDEND_OPTIONS.map(d => (
+                  <span key={d} className={`pa-chip ${dividendPref === d ? 'active' : ''}`} onClick={() => setDividendPref(d)}>{d}</span>
+                ))}
+              </div>
+            </div>
+            <div className="pa-pref">
+              <span className="pa-pref-label">Asset type</span>
+              <div className="pa-chips">
+                {ASSET_OPTIONS.map(o => (
+                  <span key={o.key} className={`pa-chip ${assetPref === o.key ? 'active' : ''}`} onClick={() => setAssetPref(o.key)}>{o.label}</span>
+                ))}
+              </div>
+            </div>
+            <div className="pa-pref pa-pref-wide">
+              <span className="pa-pref-label">Sectors of interest <span className="pa-pref-hint">(optional — none = open to all)</span></span>
+              <div className="pa-chips">
+                {SECTOR_OPTIONS.map(s => (
+                  <span key={s} className={`pa-chip ${sectorPrefs.includes(s) ? 'active' : ''}`} onClick={() => toggleSector(s)}>{s}</span>
+                ))}
+              </div>
+            </div>
+            <div className="pa-pref">
+              <span className="pa-pref-label">How many ideas</span>
+              <div className="pa-chips">
+                {[3, 5, 8].map(n => (
+                  <span key={n} className={`pa-chip ${suggestCount === n ? 'active' : ''}`} onClick={() => setSuggestCount(n)}>{n}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="pa-suggest-actions">
+            <button className="pa-ai-btn" onClick={requestSuggestions} disabled={suggestLoading}>
+              {suggestLoading ? 'Thinking…' : 'Suggest companies to add'}
+            </button>
+          </div>
+
+          {suggestError && (
+            <div className="pa-note pa-warn" style={{ marginTop: 14 }}><span className="pa-note-icon">!</span><span>{suggestError}</span></div>
+          )}
+
+          {suggestNote && suggestions && suggestions.length > 0 && (
+            <div className="pa-note pa-info" style={{ marginTop: 14 }}><span className="pa-note-icon">i</span><span>{suggestNote}</span></div>
+          )}
+
+          {suggestions && suggestions.length > 0 && (
+            <div className="pa-suggest-list">
+              {suggestions.map((s, i) => {
+                const owned = heldTickers.has(s.ticker);
+                const cap = marketCapLabel(s.marketCap);
+                return (
+                  <div key={s.ticker} className="pa-sg-card">
+                    <div className="pa-sg-id" onClick={() => navigate(`/${s.ticker}`)}>
+                      <CompanyLogo ticker={s.ticker} className="pa-logo" fallbackColor={COLORS[i % COLORS.length]} />
+                      <div>
+                        <div className="pa-sg-ticker">{s.ticker} <span className="pa-row-rating">{s.rating.toFixed(1)}★</span></div>
+                        <div className="pa-row-name">{s.name}</div>
+                      </div>
+                    </div>
+                    <div className="pa-sg-meta">
+                      <span className="pa-sg-tag">{s.sector}</span>
+                      {cap && <span className="pa-sg-tag">{cap}</span>}
+                      <span className="pa-sg-tag">{usd(s.price)}</span>
+                    </div>
+                    <div className="pa-sg-reason">{s.reason}</div>
+                    <button
+                      className={`pa-sg-add ${owned ? 'added' : ''}`}
+                      disabled={owned || (portfolioFull && !owned)}
+                      onClick={() => addHolding(s.ticker, 1)}
+                    >
+                      {owned ? '✓ In portfolio' : portfolioFull ? 'Portfolio full' : '+ Add'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="wl-disclaimer">Informational only · not financial advice</div>
       </div>
