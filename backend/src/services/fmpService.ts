@@ -29,6 +29,10 @@ export interface CompanyInfo {
   sharesOutstanding?: number;
   sector?: string;
   industry?: string;
+  isEtf?: boolean; // true for ETFs or funds (not a common stock)
+  description?: string; // business summary, for the AI business review
+  ceo?: string;
+  website?: string;
 }
 
 /**
@@ -49,7 +53,11 @@ export async function getCompanyInfo(ticker: string): Promise<CompanyInfo | null
       // buildFundamentals falls back to the latest reported diluted shares anyway
       sharesOutstanding: p.marketCap && p.price ? p.marketCap / p.price : undefined,
       sector: p.sector,
-      industry: p.industry
+      industry: p.industry,
+      isEtf: !!(p.isEtf || p.isFund),
+      description: p.description,
+      ceo: p.ceo,
+      website: p.website
     };
   } catch (error) {
     console.error(`FMP company info error for ${ticker}:`, error);
@@ -162,6 +170,107 @@ export async function searchTickers(query: string, limit = 25): Promise<Array<{ 
   }
 }
 
+export interface EarningsTranscript {
+  date: string;       // call date, e.g. "2026-04-30"
+  fiscalYear: number;
+  quarter: number;
+  content: string;    // full transcript text
+}
+
+/**
+ * Latest available earnings-call transcript for a ticker. We first read the
+ * lightweight dates list to find the most recent call, then fetch that one
+ * transcript. Returns null when transcripts aren't available for the symbol.
+ */
+export async function getLatestTranscript(ticker: string): Promise<EarningsTranscript | null> {
+  try {
+    const dates = await fmpGet('earning-call-transcript-dates', { symbol: ticker });
+    if (!Array.isArray(dates) || dates.length === 0) return null;
+    // The list is newest-first, but sort defensively by (year, quarter)
+    const latest = [...dates].sort((a, b) =>
+      (b.fiscalYear - a.fiscalYear) || (b.quarter - a.quarter)
+    )[0];
+    if (!latest?.fiscalYear || !latest?.quarter) return null;
+
+    const data = await fmpGet('earning-call-transcript', {
+      symbol: ticker,
+      year: latest.fiscalYear,
+      quarter: latest.quarter
+    });
+    const t = Array.isArray(data) ? data[0] : null;
+    if (!t?.content) return null;
+
+    return {
+      date: t.date || latest.date,
+      fiscalYear: t.year || latest.fiscalYear,
+      quarter: t.period ?? latest.quarter,
+      content: t.content
+    };
+  } catch (error) {
+    console.warn(`FMP transcript error for ${ticker}:`, error);
+    return null;
+  }
+}
+
+export interface ScreenerHit {
+  ticker: string;
+  name: string;
+  sector?: string;
+  marketCap?: number;
+}
+
+/**
+ * Stock screener over the live market - the candidate source for portfolio
+ * suggestions. FMP has no growth filter, so we screen by market cap / sector /
+ * stock-only here and let Funda's own `growing` pillar judge growth downstream.
+ * Multiple sectors fan out into parallel calls and are merged. Restricted to
+ * US-listed common stocks (no ETFs/funds, no preferred/unit tickers).
+ */
+export async function screenStocks(params: {
+  marketCapMoreThan?: number;
+  marketCapLowerThan?: number;
+  sectors?: string[];   // empty => no sector filter (whole market)
+  priceMoreThan?: number;
+  limitPerCall?: number;
+}): Promise<ScreenerHit[]> {
+  const sectors = params.sectors && params.sectors.length ? params.sectors : [undefined];
+  const limit = params.limitPerCall ?? 100;
+  const usExchanges = new Set(['NASDAQ', 'NYSE', 'AMEX']);
+
+  const calls = sectors.map(async (sector): Promise<any[]> => {
+    const q: Record<string, string | number> = {
+      isEtf: 'false',
+      isFund: 'false',
+      isActivelyTrading: 'true',
+      limit
+    };
+    if (params.marketCapMoreThan) q.marketCapMoreThan = Math.round(params.marketCapMoreThan);
+    if (params.marketCapLowerThan) q.marketCapLowerThan = Math.round(params.marketCapLowerThan);
+    if (params.priceMoreThan) q.priceMoreThan = params.priceMoreThan;
+    if (sector) q.sector = sector;
+    try {
+      const data = await fmpGet('company-screener', q);
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.warn('FMP screener call failed:', error);
+      return [];
+    }
+  });
+
+  const merged = (await Promise.all(calls)).flat();
+  const seen = new Set<string>();
+  const out: ScreenerHit[] = [];
+  for (const r of merged) {
+    const sym = String(r.symbol || '').toUpperCase();
+    if (!sym || seen.has(sym)) continue;
+    if (r.exchangeShortName && !usExchanges.has(r.exchangeShortName)) continue;
+    if (!/^[A-Z]{1,5}$/.test(sym)) continue; // skip preferreds/units/odd suffixes
+    seen.add(sym);
+    out.push({ ticker: sym, name: r.companyName || sym, sector: r.sector, marketCap: r.marketCap });
+  }
+  return out;
+}
+
 /**
  * Forward EPS = consensus estimate for the next (nearest future) fiscal year,
  * used to compute a forward P/E. Null when no estimate is available.
@@ -253,4 +362,4 @@ export async function getAnalystTargets(ticker: string): Promise<AnalystTargets 
   }
 }
 
-export default { getCompanyInfo, getQuarterlyFinancials, getPriceStats, searchTickers, getForwardEps, getAnalystTargets };
+export default { getCompanyInfo, getQuarterlyFinancials, getPriceStats, searchTickers, screenStocks, getLatestTranscript, getForwardEps, getAnalystTargets };

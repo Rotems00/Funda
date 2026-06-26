@@ -8,6 +8,9 @@ export interface Holding {
 
 export type RiskProfile = 'Conservative' | 'Balanced' | 'Aggressive';
 
+// Max distinct holdings a portfolio can track (ETFs included).
+export const PORTFOLIO_LIMIT = 20;
+
 const HOLDINGS_KEY = 'funda_portfolio';
 const PROFILE_KEY = 'funda_risk_profile';
 
@@ -34,6 +37,7 @@ export function usePortfolio() {
     setHoldings(prev => {
       const existing = prev.find(h => h.ticker === t);
       if (existing) return prev.map(h => (h.ticker === t ? { ...h, shares: h.shares + qty } : h));
+      if (prev.length >= PORTFOLIO_LIMIT) return prev; // full — adding a new ticker is a no-op
       return [...prev, { ticker: t, shares: qty }];
     });
   };

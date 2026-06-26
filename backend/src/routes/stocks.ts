@@ -1,50 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { searchStocks, getStock, getMetrics, saveStock, saveMetrics } from '../services/cacheService';
-import { searchTickers, getCompanyInfo, getPriceStats, getForwardEps, getAnalystTargets } from '../services/fmpService';
+import { searchStocks, getBusinessReview, saveBusinessReview } from '../services/cacheService';
+import { searchTickers, getCompanyInfo, getPriceStats, getLatestTranscript } from '../services/fmpService';
 import { getCikForTicker, getQuarters } from '../services/financialsCache';
-import { buildFundamentals, buildRatios, buildAnnualSeries, buildQuarterlySeries } from '../services/normalizerService';
-import { computeRating, generateSummary } from '../engine/ratingEngine';
+import { buildAnnualSeries, buildQuarterlySeries } from '../services/normalizerService';
+import { getStockDetail } from '../services/stockService';
+import { streamBusinessReview, OllamaUnavailableError, BusinessReviewContext } from '../services/ollamaService';
 
 const router = Router();
-
-const METRICS_TTL_MS = 24 * 60 * 60 * 1000; // recompute fundamentals/rating once a day
-const PRICE_TTL_MS = 24 * 60 * 60 * 1000; // prices refresh once/day (daily close), not per request
-
-/**
- * Fetch live price stats from FMP (current price, YTD change, distance from high)
- */
-async function fetchLivePriceStats(ticker: string) {
-  const stats = await getPriceStats(ticker);
-  return stats || { price: 0, ytdChange: 0, fromATH: 0 };
-}
-
-/**
- * Get price stats for a ticker, preferring the cached daily snapshot on the
- * Stock record so repeat lookups (by any user, same day) don't re-hit Polygon
- */
-async function getCachedPriceStats(ticker: string, cachedStock: Awaited<ReturnType<typeof getStock>>) {
-  const isFresh = !!cachedStock?.priceUpdatedAt && cachedStock.price != null &&
-    (Date.now() - new Date(cachedStock.priceUpdatedAt).getTime()) < PRICE_TTL_MS;
-
-  if (isFresh) {
-    return { price: cachedStock!.price as number, ytdChange: cachedStock!.ytdChange || 0, fromATH: cachedStock!.fromATH || 0 };
-  }
-
-  const priceStats = await fetchLivePriceStats(ticker);
-  if (!priceStats.price) {
-    return null;
-  }
-
-  await saveStock({
-    ticker,
-    price: priceStats.price,
-    ytdChange: priceStats.ytdChange,
-    fromATH: priceStats.fromATH,
-    priceUpdatedAt: new Date()
-  });
-
-  return priceStats;
-}
 
 /**
  * Rank ticker search results so exact/prefix ticker matches outrank
@@ -133,132 +95,48 @@ router.get('/search', async (req: Request, res: Response) => {
  */
 router.get('/:ticker', async (req: Request, res: Response) => {
   try {
-    const ticker = req.params.ticker.toUpperCase();
+    const result = await getStockDetail(req.params.ticker);
 
-    const cachedStock = await getStock(ticker);
-    const cachedMetrics = cachedStock ? await getMetrics(ticker) : null;
-    const isFresh = !!cachedMetrics && (Date.now() - new Date(cachedMetrics.computedAt).getTime()) < METRICS_TTL_MS;
-
-    if (cachedStock && cachedMetrics && isFresh) {
-      const priceStats = await getCachedPriceStats(ticker, cachedStock);
-      if (!priceStats) {
-        return res.status(404).json({ error: 'Price data not available for this ticker' });
-      }
-
-      return res.json({
-        ticker,
-        companyName: cachedStock.companyName || ticker,
-        exchange: cachedStock.exchange || 'N/A',
-        sector: cachedStock.sector || 'N/A',
-        industry: cachedStock.industry || 'N/A',
-        price: priceStats.price,
-        ytdChange: priceStats.ytdChange,
-        fromATH: priceStats.fromATH,
-        rating: cachedMetrics.rating,
-        summary: generateSummary(cachedMetrics.rating || 0),
-        pillars: cachedMetrics.pillars,
-        ratios: cachedMetrics.ratios,
-        trends: cachedMetrics.trends,
-        details: cachedMetrics.details,
-        analysts: cachedMetrics.analysts
-      });
+    if ('error' in result) {
+      const messages: Record<string, string> = {
+        not_found: 'Stock not found',
+        no_financials: 'Financial data not available for this ticker',
+        no_price: 'Price data not available for this ticker'
+      };
+      return res.status(404).json({ error: messages[result.error] });
     }
 
-    const companyInfo = await getCompanyInfo(ticker);
-    if (!companyInfo) {
-      return res.status(404).json({ error: 'Stock not found' });
-    }
-
-    const quarters = await getQuarters(ticker, companyInfo.cik);
-    if (quarters.length === 0) {
-      return res.status(404).json({ error: 'Financial data not available for this ticker' });
-    }
-
-    const priceStats = await getCachedPriceStats(ticker, cachedStock);
-    if (!priceStats) {
-      return res.status(404).json({ error: 'Price data not available for this ticker' });
-    }
-
-    const fundamentals = buildFundamentals(quarters, priceStats.price, companyInfo.sharesOutstanding);
-    const rating = computeRating(fundamentals);
-
-    // Forward P/E from analyst consensus (next-FY EPS). Note: estimates are
-    // typically non-GAAP, so forward P/E and trailing (GAAP) P/E aren't strictly
-    // comparable - standard across finance sites, shown side by side.
-    const [forwardEps, analystTargets] = await Promise.all([
-      getForwardEps(ticker),
-      getAnalystTargets(ticker)
-    ]);
-    const forwardPE = forwardEps && priceStats.price ? Math.round((priceStats.price / forwardEps) * 10) / 10 : null;
-
-    const ratios = { ...buildRatios(fundamentals), forwardPE };
-
-    // Analyst price targets + implied upside vs the current price
-    const analysts = analystTargets && analystTargets.consensus
-      ? {
-          ...analystTargets,
-          upside: priceStats.price ? Math.round(((analystTargets.consensus - priceStats.price) / priceStats.price) * 1000) / 10 : null
-        }
-      : null;
-
-    await saveStock({
-      ticker,
-      cik: companyInfo.cik,
-      companyName: companyInfo.name,
-      exchange: companyInfo.exchange,
-      sector: companyInfo.sector,
-      industry: companyInfo.industry
-    });
-
-    const trends = {
-      revenueYoY: fundamentals.revenueYoY,
-      epsYoY: fundamentals.epsYoY,
-      revenueCagr5Y: fundamentals.revenueCagr5Y,
-      trajectory: fundamentals.trajectory
-    };
-
-    const details = {
-      roe: fundamentals.roe,
-      ocfToNetIncome: fundamentals.ocfToNetIncome,
-      currentRatio: fundamentals.currentRatio,
-      interestCoverage: fundamentals.interestCoverage,
-      intangibleAssetRatio: fundamentals.intangibleAssetRatio,
-      roicYoY: fundamentals.roicYoY,
-      operatingMarginYoY: fundamentals.operatingMarginYoY,
-      shareCountYoY: fundamentals.shareCountYoY,
-      buybackYield: fundamentals.buybackYield
-    };
-
-    await saveMetrics({
-      stockId: ticker,
-      rating: rating.overall,
-      pillars: rating.pillars,
-      ratios,
-      trends,
-      details,
-      analysts
-    });
-
-    return res.json({
-      ticker,
-      companyName: companyInfo.name,
-      exchange: companyInfo.exchange || 'N/A',
-      sector: companyInfo.sector || 'N/A',
-      industry: companyInfo.industry || 'N/A',
-      price: priceStats.price,
-      ytdChange: priceStats.ytdChange,
-      fromATH: priceStats.fromATH,
-      rating: rating.overall,
-      summary: rating.summary,
-      pillars: rating.pillars,
-      ratios,
-      trends,
-      details,
-      analysts
-    });
+    return res.json(result.detail);
   } catch (error) {
     console.error('Stock detail error:', error);
     res.status(500).json({ error: 'Failed to fetch stock' });
+  }
+});
+
+/**
+ * GET /api/stocks/:ticker/quote
+ * Lightweight price + identity for ANY listed security, including ETFs/funds
+ * that have no fundamentals (so they can't get a Funda rating). Used by the
+ * portfolio to support holdings like ETFs alongside rated stocks.
+ */
+router.get('/:ticker/quote', async (req: Request, res: Response) => {
+  try {
+    const ticker = req.params.ticker.toUpperCase();
+    const info = await getCompanyInfo(ticker);
+    if (!info) return res.status(404).json({ error: 'Ticker not found' });
+
+    const priceStats = await getPriceStats(ticker);
+    return res.json({
+      ticker,
+      companyName: info.name || ticker,
+      sector: info.sector || (info.isEtf ? 'ETF' : 'N/A'),
+      isEtf: !!info.isEtf,
+      marketCap: info.market_cap,
+      price: priceStats?.price ?? 0
+    });
+  } catch (error) {
+    console.error('Quote error:', error);
+    res.status(500).json({ error: 'Failed to fetch quote' });
   }
 });
 
@@ -328,6 +206,148 @@ router.get('/:ticker/momentum', async (req: Request, res: Response) => {
     console.error('Momentum error:', error);
     res.status(500).json({ error: 'Failed to fetch momentum data' });
   }
+});
+
+// Cap how much of the (often very long) transcript we feed the local model —
+// the prepared-remarks at the start carry the business narrative we need.
+const TRANSCRIPT_CHARS = 9000;
+
+// Bump when the review prompt/sections change, so previously cached reviews are
+// treated as stale and regenerated instead of served with the old format.
+const REVIEW_PROMPT_VERSION = 'v2';
+
+/**
+ * GET /api/stocks/:ticker/business-review
+ *   - no query:        return the CACHED review (streamed as text), or 204 if none yet
+ *   - ?generate=1:     generate a fresh review (unless an up-to-date one is cached),
+ *                      stream it token-by-token, and cache it for the next user
+ * The review is written by a local LLM as a 20-year investor, grounded in the
+ * company description, latest quarter numbers, Funda ratings and the latest
+ * earnings-call transcript. Cached in MongoDB, keyed by the transcript date.
+ */
+router.get('/:ticker/business-review', async (req: Request, res: Response) => {
+  const ticker = req.params.ticker.toUpperCase();
+  const wantGenerate = req.query.generate === '1' || req.query.generate === 'true';
+
+  const cached = await getBusinessReview(ticker);
+
+  // A cached review only counts if it was written by the current prompt version
+  const cachedIsCurrent = !!cached && cached.promptVersion === REVIEW_PROMPT_VERSION;
+
+  // Fast path: serving an existing review needs no external calls
+  if (!wantGenerate) {
+    if (!cachedIsCurrent) return res.status(204).end();
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('X-Review-Cached', 'true');
+    if (cached!.generatedAt) res.setHeader('X-Review-Generated-At', new Date(cached!.generatedAt).toISOString());
+    return res.end(cached!.review);
+  }
+
+  // Generate path: gather grounding data
+  let detailResult;
+  try {
+    detailResult = await getStockDetail(ticker);
+  } catch (error) {
+    console.error('Business review detail error:', error);
+    return res.status(500).json({ error: 'Failed to load company data.' });
+  }
+  if ('error' in detailResult) {
+    return res.status(404).json({ error: 'Stock not found.' });
+  }
+  const detail = detailResult.detail;
+
+  const [companyInfo, transcript] = await Promise.all([
+    getCompanyInfo(ticker).catch(() => null),
+    getLatestTranscript(ticker).catch(() => null)
+  ]);
+
+  // If an up-to-date review (current prompt + same transcript) is already
+  // cached, reuse it instead of regenerating
+  if (cachedIsCurrent && transcript && cached!.transcriptDate === transcript.date) {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('X-Review-Cached', 'true');
+    return res.end(cached!.review);
+  }
+
+  // Latest quarter's raw figures (most-recent-first)
+  const cik = await getCikForTicker(ticker).catch(() => undefined);
+  const quarters = await getQuarters(ticker, cik || companyInfo?.cik).catch(() => []);
+  const q0 = quarters[0];
+
+  const context: BusinessReviewContext = {
+    ticker,
+    name: detail.companyName,
+    sector: detail.sector,
+    industry: detail.industry,
+    description: companyInfo?.description,
+    rating: detail.rating,
+    pillars: detail.pillars,
+    ratios: detail.ratios,
+    latestQuarter: q0 ? {
+      period: q0.fiscalPeriod && q0.fiscalYear ? `${q0.fiscalPeriod} ${q0.fiscalYear}` : undefined,
+      revenue: q0.revenue,
+      netIncome: q0.netIncome,
+      eps: q0.eps,
+      operatingCashFlow: q0.operatingCashFlow,
+      cash: q0.cash,
+      debt: q0.longTermDebt,
+      revenueYoY: detail.trends?.revenueYoY,
+      epsYoY: detail.trends?.epsYoY
+    } : undefined,
+    transcriptExcerpt: transcript?.content ? transcript.content.slice(0, TRANSCRIPT_CHARS) : undefined,
+    transcriptLabel: transcript ? `Q${transcript.quarter} ${transcript.fiscalYear}` : undefined
+  };
+
+  let stream: NodeJS.ReadableStream;
+  try {
+    stream = await streamBusinessReview(context);
+  } catch (error) {
+    if (error instanceof OllamaUnavailableError) {
+      return res.status(503).json({ error: error.message });
+    }
+    console.error('Business review generation error:', error);
+    return res.status(500).json({ error: 'Failed to generate review.' });
+  }
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('X-Review-Cached', 'false');
+
+  // Forward Ollama's NDJSON token stream as plain text, accumulating the full
+  // text so we can cache it once generation completes.
+  let buffer = '';
+  let full = '';
+  stream.on('data', (chunk: Buffer) => {
+    buffer += chunk.toString();
+    let nl: number;
+    while ((nl = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (!line) continue;
+      try {
+        const obj = JSON.parse(line);
+        if (obj.message?.content) {
+          full += obj.message.content;
+          res.write(obj.message.content);
+        }
+      } catch {
+        /* ignore partial/non-JSON lines */
+      }
+    }
+  });
+  stream.on('end', async () => {
+    if (full.trim().length > 0) {
+      await saveBusinessReview({
+        stockId: ticker,
+        review: full,
+        transcriptDate: transcript?.date,
+        promptVersion: REVIEW_PROMPT_VERSION,
+        model: process.env.OLLAMA_MODEL || 'llama3.1'
+      });
+    }
+    res.end();
+  });
+  stream.on('error', () => res.end());
 });
 
 /**

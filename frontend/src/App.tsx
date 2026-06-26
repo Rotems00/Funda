@@ -6,6 +6,7 @@ import { PillarBreakdown } from './components/PillarBreakdown';
 import { MomentumChart } from './components/MomentumChart';
 import { CashDebtChart } from './components/CashDebtChart';
 import { AnalystTargets } from './components/AnalystTargets';
+import { BusinessReview } from './components/BusinessReview';
 import { PortfolioAnalyzer } from './components/PortfolioAnalyzer';
 import { LandingHero } from './components/LandingHero';
 import { LoginPage } from './components/LoginPage';
@@ -79,6 +80,7 @@ function StockRoute() {
               onPeriodChange={setMomentumPeriod}
               onRangeChange={setMomentumRange}
             />
+            <BusinessReview ticker={stock.ticker} />
             <CashDebtChart data={momentumData} />
           </section>
         )}

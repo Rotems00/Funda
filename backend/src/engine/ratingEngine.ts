@@ -5,7 +5,7 @@
  * 1. Growing - Revenue & EPS YoY trend
  * 2. Profitable - Margins & ROE
  * 3. Fairly Priced - Valuation ratios
- * 4. Safe - Balance sheet strength
+ * 4. Resilient - Balance sheet strength (internal key: `safe`)
  * 5. Can Keep Winning - Competitive moat
  */
 

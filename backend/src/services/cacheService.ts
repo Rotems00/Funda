@@ -315,6 +315,8 @@ function getStockSchema() {
     exchange: String,
     sector: String,
     industry: String,
+    marketCap: Number,
+    isEtf: Boolean,
     price: Number,
     ytdChange: Number,
     fromATH: Number,
@@ -445,6 +447,56 @@ function getUserProfileSchema() {
   });
 }
 
+// ==================== BUSINESS REVIEW (AI) ====================
+
+export interface IBusinessReview {
+  stockId: string;
+  review: string;           // the generated markdown text
+  transcriptDate?: string;  // which earnings call it was based on (cache key)
+  promptVersion?: string;   // bumped when the prompt changes, to invalidate old reviews
+  model?: string;           // which LLM produced it
+  generatedAt: Date;
+}
+
+function getBusinessReviewSchema() {
+  return new mongoose.Schema({
+    stockId: { type: String, required: true, unique: true, index: true },
+    review: { type: String, required: true },
+    transcriptDate: String,
+    promptVersion: String,
+    model: String,
+    generatedAt: { type: Date, default: Date.now }
+  });
+}
+
+/**
+ * Cached AI business review for a ticker. Regenerated only when a newer
+ * earnings-call transcript appears, so it's written once and served to everyone.
+ */
+export async function getBusinessReview(stockId: string): Promise<IBusinessReview | null> {
+  try {
+    const Model = getOrCreateModel('BusinessReview', getBusinessReviewSchema);
+    const doc = await Model.findOne({ stockId: stockId.toUpperCase() });
+    return doc as IBusinessReview | null;
+  } catch (error) {
+    console.error('Error getting business review:', error);
+    return null;
+  }
+}
+
+export async function saveBusinessReview(review: Partial<IBusinessReview>): Promise<void> {
+  try {
+    const Model = getOrCreateModel('BusinessReview', getBusinessReviewSchema);
+    await Model.findOneAndUpdate(
+      { stockId: review.stockId },
+      { ...review, generatedAt: new Date() },
+      { upsert: true, new: true }
+    );
+  } catch (error) {
+    console.error('Error saving business review:', error);
+  }
+}
+
 export default {
   connectDB,
   saveStock,
@@ -460,5 +512,7 @@ export default {
   saveUserProfile,
   getUserProfile,
   addToWatchlist,
-  removeFromWatchlist
+  removeFromWatchlist,
+  getBusinessReview,
+  saveBusinessReview
 };

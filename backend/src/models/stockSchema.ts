@@ -10,6 +10,8 @@ export interface IStock {
   exchange?: string;
   sector?: string;
   industry?: string;
+  marketCap?: number;
+  isEtf?: boolean; // ETF/fund flag, so the recommender can keep to common stocks
   // Daily price snapshot, refreshed ~once/day per the "fetch once, cache
   // forever" pipeline - not a live quote
   price?: number;
@@ -131,7 +133,7 @@ export interface IPrice {
   atHighDistancePercent?: number; // %
 }
 
-export const WATCHLIST_LIMIT = 10;
+export const WATCHLIST_LIMIT = 20;
 
 export interface IUserProfile {
   userId: string; // Google's "sub" claim - stable unique ID for the account

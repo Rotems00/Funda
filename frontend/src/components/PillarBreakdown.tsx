@@ -7,6 +7,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { Stock } from '../hooks/useStock';
+import { MetricTip } from './MetricTip';
 
 interface PillarBreakdownProps {
   stock: Stock;
@@ -18,6 +19,7 @@ interface MetricChip {
   label: string;
   value: string;
   sentiment: Sentiment;
+  info?: string; // key into the metric glossary for the hover/click explainer
 }
 
 interface PillarInfo {
@@ -66,10 +68,10 @@ function buildPillars(stock: Stock): PillarInfo[] {
       desc: 'Revenue & EPS growth trajectory',
       icon: ICONS.growing,
       metrics: [
-        { label: 'Rev YoY', value: pct(trends.revenueYoY), sentiment: trends.revenueYoY >= 10 ? 'pos' : trends.revenueYoY >= 0 ? 'neutral' : 'neg' },
-        { label: 'EPS YoY', value: pct(trends.epsYoY), sentiment: trends.epsYoY >= 10 ? 'pos' : trends.epsYoY >= 0 ? 'neutral' : 'neg' },
-        { label: '5Y CAGR', value: pct(trends.revenueCagr5Y), sentiment: trends.revenueCagr5Y >= 10 ? 'pos' : trends.revenueCagr5Y >= 0 ? 'neutral' : 'warn' },
-        { label: 'Trajectory', value: trends.trajectory, sentiment: trends.trajectory === 'accelerating' ? 'pos' : trends.trajectory === 'cooling' ? 'warn' : 'neutral' }
+        { label: 'Rev YoY', value: pct(trends.revenueYoY), sentiment: trends.revenueYoY >= 10 ? 'pos' : trends.revenueYoY >= 0 ? 'neutral' : 'neg', info: 'revenueYoY' },
+        { label: 'EPS YoY', value: pct(trends.epsYoY), sentiment: trends.epsYoY >= 10 ? 'pos' : trends.epsYoY >= 0 ? 'neutral' : 'neg', info: 'epsYoY' },
+        { label: '5Y CAGR', value: pct(trends.revenueCagr5Y), sentiment: trends.revenueCagr5Y >= 10 ? 'pos' : trends.revenueCagr5Y >= 0 ? 'neutral' : 'warn', info: 'revenueCagr5Y' },
+        { label: 'Trajectory', value: trends.trajectory, sentiment: trends.trajectory === 'accelerating' ? 'pos' : trends.trajectory === 'cooling' ? 'warn' : 'neutral', info: 'trajectory' }
       ]
     },
     {
@@ -78,13 +80,14 @@ function buildPillars(stock: Stock): PillarInfo[] {
       desc: 'Net margins & return on capital',
       icon: ICONS.profitable,
       metrics: [
-        { label: 'Net margin', value: pct(ratios.netMargin, 1), sentiment: ratios.netMargin >= 15 ? 'pos' : ratios.netMargin >= 5 ? 'neutral' : 'warn' },
-        { label: 'ROE', value: pct(details.roe, 0), sentiment: details.roe >= 15 ? 'pos' : details.roe >= 5 ? 'neutral' : 'warn' },
-        { label: 'ROIC', value: pct(ratios.roic, 1), sentiment: ratios.roic >= 10 ? 'pos' : ratios.roic >= 5 ? 'neutral' : 'warn' },
+        { label: 'Net margin', value: pct(ratios.netMargin, 1), sentiment: ratios.netMargin >= 15 ? 'pos' : ratios.netMargin >= 5 ? 'neutral' : 'warn', info: 'netMargin' },
+        { label: 'ROE', value: pct(details.roe, 0), sentiment: details.roe >= 15 ? 'pos' : details.roe >= 5 ? 'neutral' : 'warn', info: 'roe' },
+        { label: 'ROIC', value: pct(ratios.roic, 1), sentiment: ratios.roic >= 10 ? 'pos' : ratios.roic >= 5 ? 'neutral' : 'warn', info: 'roic' },
         {
           label: 'Earnings quality',
           value: details.ocfToNetIncome >= 1 ? 'high' : details.ocfToNetIncome >= 0.7 ? 'fair' : 'low',
-          sentiment: details.ocfToNetIncome >= 1 ? 'pos' : details.ocfToNetIncome >= 0.7 ? 'neutral' : 'warn'
+          sentiment: details.ocfToNetIncome >= 1 ? 'pos' : details.ocfToNetIncome >= 0.7 ? 'neutral' : 'warn',
+          info: 'earningsQuality'
         }
       ]
     },
@@ -97,29 +100,32 @@ function buildPillars(stock: Stock): PillarInfo[] {
         {
           label: 'PEG',
           value: ratios.pegRatio !== null ? ratios.pegRatio.toFixed(2) : 'n/a',
-          sentiment: ratios.pegRatio === null ? 'neutral' : ratios.pegRatio <= 1 ? 'pos' : ratios.pegRatio <= 2 ? 'neutral' : 'warn'
+          sentiment: ratios.pegRatio === null ? 'neutral' : ratios.pegRatio <= 1 ? 'pos' : ratios.pegRatio <= 2 ? 'neutral' : 'warn',
+          info: 'pegRatio'
         },
-        { label: 'P/E', value: ratios.peRatio !== null ? ratios.peRatio.toFixed(1) : 'n/a', sentiment: 'neutral' },
+        { label: 'P/E', value: ratios.peRatio !== null ? ratios.peRatio.toFixed(1) : 'n/a', sentiment: 'neutral', info: 'peRatio' },
         {
           label: 'vs growth',
           value: ratios.pegRatio === null ? 'n/a' : ratios.pegRatio <= 1 ? 'fair' : ratios.pegRatio <= 2 ? 'full' : 'expensive',
-          sentiment: ratios.pegRatio === null ? 'neutral' : ratios.pegRatio <= 1 ? 'pos' : ratios.pegRatio <= 2 ? 'neutral' : 'warn'
+          sentiment: ratios.pegRatio === null ? 'neutral' : ratios.pegRatio <= 1 ? 'pos' : ratios.pegRatio <= 2 ? 'neutral' : 'warn',
+          info: 'pegRatio'
         }
       ]
     },
     {
       key: 'safe',
-      name: 'Safe',
+      name: 'Resilient',
       desc: 'Debt levels & financial strength',
       icon: ICONS.safe,
       metrics: [
-        { label: 'Debt/Equity', value: ratios.debtToEquity.toFixed(2), sentiment: ratios.debtToEquity < 0.5 ? 'pos' : ratios.debtToEquity < 1 ? 'neutral' : 'warn' },
-        { label: 'Current ratio', value: details.currentRatio.toFixed(2), sentiment: details.currentRatio >= 1.5 ? 'pos' : details.currentRatio >= 1 ? 'neutral' : 'warn' },
-        { label: 'Int. coverage', value: `${details.interestCoverage.toFixed(0)}×`, sentiment: details.interestCoverage >= 5 ? 'pos' : details.interestCoverage >= 2 ? 'neutral' : 'warn' },
+        { label: 'Debt/Equity', value: ratios.debtToEquity.toFixed(2), sentiment: ratios.debtToEquity < 0.5 ? 'pos' : ratios.debtToEquity < 1 ? 'neutral' : 'warn', info: 'debtToEquity' },
+        { label: 'Current ratio', value: details.currentRatio.toFixed(2), sentiment: details.currentRatio >= 1.5 ? 'pos' : details.currentRatio >= 1 ? 'neutral' : 'warn', info: 'currentRatio' },
+        { label: 'Int. coverage', value: `${details.interestCoverage.toFixed(0)}×`, sentiment: details.interestCoverage >= 5 ? 'pos' : details.interestCoverage >= 2 ? 'neutral' : 'warn', info: 'interestCoverage' },
         {
           label: 'Intangibles',
           value: details.intangibleAssetRatio < 0.2 ? 'low' : details.intangibleAssetRatio < 0.4 ? 'moderate' : 'high',
-          sentiment: details.intangibleAssetRatio < 0.2 ? 'pos' : details.intangibleAssetRatio < 0.4 ? 'neutral' : 'warn'
+          sentiment: details.intangibleAssetRatio < 0.2 ? 'pos' : details.intangibleAssetRatio < 0.4 ? 'neutral' : 'warn',
+          info: 'intangibles'
         }
       ]
     },
@@ -132,16 +138,18 @@ function buildPillars(stock: Stock): PillarInfo[] {
         {
           label: 'ROIC trend',
           value: details.roicYoY > 1 ? 'rising' : details.roicYoY < -1 ? 'falling' : 'flat',
-          sentiment: details.roicYoY > 1 ? 'pos' : details.roicYoY < -1 ? 'warn' : 'neutral'
+          sentiment: details.roicYoY > 1 ? 'pos' : details.roicYoY < -1 ? 'warn' : 'neutral',
+          info: 'roicTrend'
         },
         {
           label: 'Op margin',
           value: details.operatingMarginYoY > 1 ? 'rising' : details.operatingMarginYoY < -1 ? 'falling' : 'flat',
-          sentiment: details.operatingMarginYoY > 1 ? 'pos' : details.operatingMarginYoY < -1 ? 'warn' : 'neutral'
+          sentiment: details.operatingMarginYoY > 1 ? 'pos' : details.operatingMarginYoY < -1 ? 'warn' : 'neutral',
+          info: 'opMargin'
         },
         details.buybackYield !== null
-          ? { label: 'Buybacks', value: `net ${pct(details.buybackYield, 1)}`, sentiment: details.buybackYield > 0 ? 'pos' : details.buybackYield < -0.5 ? 'warn' : 'neutral' }
-          : { label: 'Share count', value: `net ${pct(details.shareCountYoY, 1)}`, sentiment: details.shareCountYoY < 0 ? 'pos' : details.shareCountYoY > 2 ? 'warn' : 'neutral' }
+          ? { label: 'Buybacks', value: `net ${pct(details.buybackYield, 1)}`, sentiment: details.buybackYield > 0 ? 'pos' : details.buybackYield < -0.5 ? 'warn' : 'neutral', info: 'buybacks' }
+          : { label: 'Share count', value: `net ${pct(details.shareCountYoY, 1)}`, sentiment: details.shareCountYoY < 0 ? 'pos' : details.shareCountYoY > 2 ? 'warn' : 'neutral', info: 'shareCount' }
       ]
     }
   ];
@@ -185,7 +193,7 @@ export const PillarBreakdown: React.FC<PillarBreakdownProps> = ({ stock }) => {
     growing: 'Growing',
     profitable: 'Profitable',
     fairlyPriced: 'Priced',
-    safe: 'Safe',
+    safe: 'Resilient',
     canKeepWinning: 'Moat'
   };
   const radarData = pillarInfos.map(p => ({ name: RADAR_SHORT_NAMES[p.key], score: stock.pillars[p.key] }));
@@ -243,9 +251,17 @@ export const PillarBreakdown: React.FC<PillarBreakdownProps> = ({ stock }) => {
                   <div className="pillar-row-desc">{p.desc}</div>
                   <div className="pillar-row-chips">
                     {p.metrics.map(m => (
-                      <span key={m.label} className={`pillar-chip ${SENTIMENT_STYLE[m.sentiment]}`}>
-                        {m.label} <b>{m.value}</b>
-                      </span>
+                      m.info ? (
+                        <MetricTip key={m.label} metric={m.info} className="pillar-chip-tip">
+                          <span className={`pillar-chip pillar-chip-clickable ${SENTIMENT_STYLE[m.sentiment]}`}>
+                            {m.label} <b>{m.value}</b>
+                          </span>
+                        </MetricTip>
+                      ) : (
+                        <span key={m.label} className={`pillar-chip ${SENTIMENT_STYLE[m.sentiment]}`}>
+                          {m.label} <b>{m.value}</b>
+                        </span>
+                      )
                     ))}
                   </div>
                 </div>
@@ -256,30 +272,30 @@ export const PillarBreakdown: React.FC<PillarBreakdownProps> = ({ stock }) => {
       </div>
 
       <div className="ratios-section">
-        <h4>Key Ratios</h4>
+        <h4>Key Ratios <span className="ratios-hint">— hover or tap any metric to learn what it means</span></h4>
         <div className="ratios-grid">
           <div className="ratio-item">
-            <span className="ratio-label">P/E Ratio</span>
+            <span className="ratio-label">P/E Ratio <MetricTip metric="peRatio" /></span>
             <span className="ratio-value">{stock.ratios.peRatio !== null ? stock.ratios.peRatio.toFixed(1) : 'N/A'}</span>
           </div>
           <div className="ratio-item">
-            <span className="ratio-label">Forward P/E</span>
+            <span className="ratio-label">Forward P/E <MetricTip metric="forwardPE" /></span>
             <span className="ratio-value">{stock.ratios.forwardPE != null ? stock.ratios.forwardPE.toFixed(1) : 'N/A'}</span>
           </div>
           <div className="ratio-item">
-            <span className="ratio-label">PEG Ratio</span>
+            <span className="ratio-label">PEG Ratio <MetricTip metric="pegRatio" /></span>
             <span className="ratio-value">{stock.ratios.pegRatio !== null ? stock.ratios.pegRatio.toFixed(2) : 'N/A'}</span>
           </div>
           <div className="ratio-item">
-            <span className="ratio-label">Debt/Equity</span>
+            <span className="ratio-label">Debt/Equity <MetricTip metric="debtToEquity" /></span>
             <span className="ratio-value">{stock.ratios.debtToEquity.toFixed(2)}</span>
           </div>
           <div className="ratio-item">
-            <span className="ratio-label">Net Margin</span>
+            <span className="ratio-label">Net Margin <MetricTip metric="netMargin" /></span>
             <span className="ratio-value">{stock.ratios.netMargin.toFixed(1)}%</span>
           </div>
           <div className="ratio-item">
-            <span className="ratio-label">ROIC</span>
+            <span className="ratio-label">ROIC <MetricTip metric="roic" /></span>
             <span className="ratio-value">{stock.ratios.roic.toFixed(1)}%</span>
           </div>
         </div>

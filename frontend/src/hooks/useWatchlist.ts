@@ -14,7 +14,7 @@ const API_BASE = '/api';
 
 export function useWatchlist(enabled: boolean): UseWatchlistReturn {
   const [watchlist, setWatchlist] = useState<string[]>([]);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(20);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +27,7 @@ export function useWatchlist(enabled: boolean): UseWatchlistReturn {
     try {
       const res = await axios.get(`${API_BASE}/users/watchlist`);
       setWatchlist(res.data.watchlist || []);
-      setLimit(res.data.limit || 10);
+      setLimit(res.data.limit || 20);
       setError(null);
     } catch {
       setError('Failed to load watchlist');
